@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Kotlin Editor - Crash Recovery</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#bdc7db",
+                        "surface-variant": "#30353d",
+                        "inverse-primary": "#44617d",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#121c2b",
+                        "inverse-on-surface": "#2c3138",
+                        "secondary-container": "#3d4758",
+                        "background": "#0f141b",
+                        "surface-tint": "#accaea",
+                        "secondary-fixed": "#d9e3f8",
+                        "on-primary-fixed-variant": "#2c4964",
+                        "tertiary-fixed": "#dde2f4",
+                        "outline": "#8d9198",
+                        "on-primary": "#13334c",
+                        "tertiary-container": "#8b91a1",
+                        "on-secondary-container": "#abb6c9",
+                        "on-surface-variant": "#c3c7ce",
+                        "on-surface": "#dee2ed",
+                        "surface-container-high": "#252a32",
+                        "primary": "#accaea",
+                        "on-secondary": "#273140",
+                        "error": "#ffb4ab",
+                        "on-primary-container": "#0a2c45",
+                        "inverse-surface": "#dee2ed",
+                        "surface-container-low": "#171c23",
+                        "tertiary-fixed-dim": "#c1c6d7",
+                        "surface-container-highest": "#30353d",
+                        "on-tertiary-fixed": "#161c28",
+                        "on-tertiary": "#2a303e",
+                        "surface-container": "#1b2027",
+                        "outline-variant": "#43474d",
+                        "primary-fixed-dim": "#accaea",
+                        "surface-dim": "#0f141b",
+                        "on-secondary-fixed-variant": "#3d4758",
+                        "on-tertiary-container": "#242a37",
+                        "on-background": "#dee2ed",
+                        "secondary": "#bdc7db",
+                        "primary-fixed": "#cee5ff",
+                        "primary-container": "#7794b2",
+                        "surface-container-lowest": "#090e15",
+                        "tertiary": "#c1c6d7",
+                        "on-tertiary-fixed-variant": "#414755",
+                        "surface-bright": "#343941",
+                        "surface": "#0f141b",
+                        "on-error": "#690005",
+                        "on-primary-fixed": "#001d33",
+                        "on-error-container": "#ffdad6",
+                        "brand-violet": "#7F52FF"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "toolbar-height": "48px",
+                        "gutter-editor": "16px",
+                        "tab-height": "36px",
+                        "menu-item-height": "44px",
+                        "keyboard-accessory-height": "40px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Hanken Grotesk"],
+                        "code-sm": ["JetBrains Mono"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-xs": ["JetBrains Mono"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "code-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "code-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-xs": ["10px", { "lineHeight": "12px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "code-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen w-screen overflow-hidden flex flex-col relative select-none">
+<!-- Mock Background App Content (Kotlin Editor Loading / Uninitialized State) -->
+<div class="flex-1 flex flex-col blur-sm opacity-50 relative z-0">
+    <!-- TopAppBar (Simulated) -->
+    <header class="flex justify-between items-center h-toolbar-height px-4 w-full border-b border-outline-variant bg-background">
+        <div class="flex items-center gap-4">
+            <span class="material-symbols-outlined text-on-surface-variant">menu</span>
+            <h1 class="font-headline-sm text-headline-sm font-bold text-on-surface">Code Editor</h1>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">settings</span>
+    </header>
+    <!-- Editor Canvas (Empty/Loading) -->
+    <main class="flex-1 flex">
+        <!-- Gutter -->
+        <div class="w-gutter-editor border-r border-outline-variant bg-surface-container-lowest h-full"></div>
+        <!-- Code Area -->
+        <div class="flex-1 p-4 font-code-md text-code-md text-on-surface-variant opacity-30 flex items-center justify-center">
+            <span>Initializing workspace...</span>
+        </div>
+    </main>
+    <!-- BottomNavBar (Simulated) -->
+    <nav class="fixed bottom-0 w-full h-[56px] flex justify-around items-center bg-surface-container-high px-2 border-t border-outline-variant">
+        <div class="flex flex-col items-center justify-center text-on-surface-variant opacity-70">
+            <span class="material-symbols-outlined">folder_open</span>
+            <span class="font-label-xs text-label-xs mt-1">Explorer</span>
+        </div>
+        <div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1">
+            <span class="material-symbols-outlined filled-icon">search</span>
+            <span class="font-label-xs text-label-xs mt-1">Search</span>
+        </div>
+        <div class="flex flex-col items-center justify-center text-on-surface-variant opacity-70">
+            <span class="material-symbols-outlined">bug_report</span>
+            <span class="font-label-xs text-label-xs mt-1">Debug</span>
+        </div>
+        <div class="flex flex-col items-center justify-center text-on-surface-variant opacity-70">
+            <span class="material-symbols-outlined">account_tree</span>
+            <span class="font-label-xs text-label-xs mt-1">Source</span>
+        </div>
+    </nav>
+</div>
+<!-- Scrim & Modal Overlay -->
+<div class="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <!-- Crash Recovery Modal Card -->
+    <div class="bg-surface-container w-full max-w-[400px] rounded-xl shadow-[0px_4px_24px_rgba(0,0,0,0.8)] border border-outline-variant/30 flex flex-col transform transition-all scale-100 opacity-100">
+        <!-- Modal Content -->
+        <div class="p-6 pb-4">
+            <div class="flex items-center gap-3 mb-4 text-error">
+                <span class="material-symbols-outlined filled-icon text-2xl">warning</span>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Crash Recovery</h2>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                Unsaved changes were found for <span class="font-code-sm text-code-sm text-primary bg-surface-container-high px-1 py-0.5 rounded">Main.kt</span>. Would you like to restore them?
+            </p>
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 items-center">
+                <button class="px-5 py-2.5 rounded-lg font-body-md text-body-md font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors focus:outline-none focus:ring-2 focus:ring-outline-variant">
+                    Discard
+                </button>
+                <button class="px-5 py-2.5 rounded-lg font-body-md text-body-md font-semibold bg-[#7F52FF] text-white hover:bg-[#6c42e5] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7F52FF] focus:ring-offset-2 focus:ring-offset-surface-container flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">restore</span>
+                    Restore
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body></html>

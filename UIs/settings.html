@@ -1,0 +1,322 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Kotlin Editor Settings</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1d1a24",
+                        "surface-tint": "#cdbdff",
+                        "on-primary-fixed": "#20005f",
+                        "primary-fixed": "#e8deff",
+                        "outline": "#948ea1",
+                        "primary-fixed-dim": "#cdbdff",
+                        "surface": "#14121c",
+                        "surface-container-lowest": "#0f0d16",
+                        "tertiary-fixed": "#ffdbc7",
+                        "on-primary-fixed-variant": "#4f00d0",
+                        "surface-dim": "#14121c",
+                        "on-secondary-fixed-variant": "#36485b",
+                        "surface-bright": "#3b3743",
+                        "tertiary": "#ffb688",
+                        "primary": "#cdbdff",
+                        "secondary": "#b5c8df",
+                        "on-tertiary-fixed": "#311300",
+                        "on-secondary": "#203243",
+                        "on-surface-variant": "#cac3d8",
+                        "surface-container-highest": "#36333e",
+                        "background": "#14121c",
+                        "secondary-fixed-dim": "#b5c8df",
+                        "on-tertiary": "#512400",
+                        "tertiary-container": "#b55800",
+                        "on-secondary-fixed": "#091d2e",
+                        "secondary-fixed": "#d1e4fb",
+                        "on-tertiary-container": "#fff7f4",
+                        "inverse-on-surface": "#322f3a",
+                        "surface-variant": "#36333e",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#e6e0ee",
+                        "on-primary-container": "#fcf6ff",
+                        "inverse-surface": "#e6e0ee",
+                        "surface-container": "#211e28",
+                        "outline-variant": "#494455",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#733600",
+                        "error": "#ffb4ab",
+                        "secondary-container": "#36485b",
+                        "on-surface": "#e6e0ee",
+                        "inverse-primary": "#6833ea",
+                        "on-secondary-container": "#a4b7cd",
+                        "on-error": "#690005",
+                        "on-primary": "#370096",
+                        "tertiary-fixed-dim": "#ffb688",
+                        "primary-container": "#7c4dff",
+                        "surface-container-high": "#2b2833"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "24px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "gutter": "12px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "label-md": [
+                            "JetBrains Mono"
+                        ],
+                        "headline-md": [
+                            "Geist"
+                        ],
+                        "label-sm": [
+                            "JetBrains Mono"
+                        ],
+                        "headline-lg": [
+                            "Geist"
+                        ],
+                        "body-md": [
+                            "Geist"
+                        ],
+                        "body-lg": [
+                            "Geist"
+                        ]
+                    },
+                    "fontSize": {
+                        "label-md": [
+                            "12px",
+                            {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.02em",
+                                "fontWeight": "500"
+                            }
+                        ],
+                        "headline-md": [
+                            "20px",
+                            {
+                                "lineHeight": "28px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "label-sm": [
+                            "11px",
+                            {
+                                "lineHeight": "14px",
+                                "letterSpacing": "0.01em",
+                                "fontWeight": "500"
+                            }
+                        ],
+                        "headline-lg": [
+                            "24px",
+                            {
+                                "lineHeight": "32px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "body-md": [
+                            "14px",
+                            {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "body-lg": [
+                            "16px",
+                            {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                            }
+                        ]
+                    }
+                },
+            }
+        }
+    </script>
+    <style>
+        /* Custom toggle styles */
+        .toggle-checkbox:checked {
+            background-color: theme('colors.primary-container');
+            border-color: theme('colors.primary-container');
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            transform: translateX(100%);
+            background-color: theme('colors.on-primary-container');
+        }
+
+        /* Custom Range Slider */
+        input[type=range]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: theme('colors.primary');
+            cursor: pointer;
+            margin-top: -6px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: theme('colors.surface-variant');
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md h-screen flex flex-col overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline-variant flat no shadows flex items-center px-md h-14 w-full shrink-0 relative z-20">
+    <button class="flex items-center justify-center p-sm rounded-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-100 mr-sm">
+        <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+    </button>
+    <h1 class="font-headline-md text-headline-md text-on-surface dark:text-on-surface flex-1">Settings</h1>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop w-full max-w-4xl mx-auto space-y-xl pb-24">
+    <!-- Section 1: Editor Preferences -->
+    <section class="space-y-md">
+        <h2 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-sm">Editor Preferences</h2>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+            <!-- Font Size Slider -->
+            <div class="p-md flex items-center justify-between border-b border-outline-variant"><div class="flex-1">
+                <label class="font-body-md text-body-md text-on-surface block mb-sm">Font Size</label>
+                <div class="flex items-center gap-lg">
+                    <div class="relative flex-1 flex items-center h-6">
+                        <div class="absolute w-full h-1 bg-surface-variant rounded-full"></div>
+                        <div class="absolute h-1 bg-primary rounded-full" style="width: 40%"></div>
+                        <input class="absolute w-full appearance-none bg-transparent cursor-pointer z-10 focus:outline-none" max="24" min="10" type="range" value="14" oninput="this.previousElementSibling.style.width = ((this.value - 10) / 14 * 100) + '%'; this.parentElement.parentElement.nextElementSibling.innerText = this.value + 'px'">
+                    </div>
+                    <div class="bg-surface-container-high border border-outline-variant px-md py-xs rounded text-primary font-label-md text-label-md min-w-[56px] text-center shadow-sm">
+                        14px
+                    </div>
+                </div>
+            </div></div>
+            <!-- Tab Size Dropdown -->
+            <div class="p-md flex items-center justify-between border-b border-outline-variant">
+                <label class="font-body-md text-body-md text-on-surface">Tab Size</label>
+                <div class="relative">
+                    <select class="appearance-none bg-surface-variant border border-outline-variant text-on-surface font-label-md text-label-md rounded px-md py-sm pr-lg focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container">
+                        <option>2 spaces</option>
+                        <option selected="">4 spaces</option>
+                        <option>8 spaces</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-sm text-on-surface-variant">
+                        <span class="material-symbols-outlined text-[16px]" data-icon="expand_more">expand_more</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Word Wrap Toggle -->
+            <div class="p-md flex items-center justify-between border-b border-outline-variant hover:bg-surface-container-highest transition-colors cursor-pointer" onclick="document.getElementById('toggle-word-wrap').click()">
+                <span class="font-body-md text-body-md text-on-surface">Word Wrap</span>
+                <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
+                    <input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-word-wrap" name="toggle" type="checkbox">
+                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-word-wrap"></label>
+                </div>
+            </div>
+            <!-- Line Numbers Toggle -->
+            <div class="p-md flex items-center justify-between border-b border-outline-variant hover:bg-surface-container-highest transition-colors cursor-pointer" onclick="document.getElementById('toggle-line-numbers').click()">
+                <span class="font-body-md text-body-md text-on-surface">Line Numbers</span>
+                <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
+                    <input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-line-numbers" name="toggle" type="checkbox">
+                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-line-numbers"></label>
+                </div>
+            </div>
+            <!-- Highlight Current Line Toggle -->
+            <div class="p-md flex items-center justify-between hover:bg-surface-container-highest transition-colors cursor-pointer" onclick="document.getElementById('toggle-highlight-line').click()">
+                <span class="font-body-md text-body-md text-on-surface">Highlight Current Line</span>
+                <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
+                    <input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-highlight-line" name="toggle" type="checkbox">
+                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-highlight-line"></label>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Section 2: Appearance -->
+    <section class="space-y-md">
+        <h2 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-sm">Appearance</h2>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+            <!-- App Theme Segmented Control -->
+            <div class="p-md flex flex-col md:flex-row md:items-center justify-between border-b border-outline-variant gap-sm">
+                <span class="font-body-md text-body-md text-on-surface">App Theme</span>
+                <div class="flex bg-surface-variant rounded p-xs">
+                    <button class="flex-1 md:flex-none px-md py-xs rounded bg-surface-container-high text-on-surface font-label-md text-label-md shadow-sm border border-outline-variant">Dark</button>
+                    <button class="flex-1 md:flex-none px-md py-xs rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors">Light</button>
+                    <button class="flex-1 md:flex-none px-md py-xs rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors">System</button>
+                </div>
+            </div>
+            <!-- Syntax Highlighting Toggle -->
+            <div class="p-md flex items-center justify-between hover:bg-surface-container-highest transition-colors cursor-pointer" onclick="document.getElementById('toggle-syntax').click()">
+                <span class="font-body-md text-body-md text-on-surface">Syntax Highlighting</span>
+                <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
+                    <input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-syntax" name="toggle" type="checkbox">
+                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-syntax"></label>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Section 3: System & Recovery -->
+    <section class="space-y-md">
+        <h2 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-sm">System &amp; Recovery</h2>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+            <!-- Auto-save Interval Dropdown -->
+            <div class="p-md flex items-center justify-between border-b border-outline-variant">
+                <label class="font-body-md text-body-md text-on-surface">Auto-save Interval</label>
+                <div class="relative">
+                    <select class="appearance-none bg-surface-variant border border-outline-variant text-on-surface font-label-md text-label-md rounded px-md py-sm pr-lg focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container">
+                        <option>5s</option>
+                        <option selected="">10s</option>
+                        <option>30s</option>
+                        <option>1m</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-sm text-on-surface-variant">
+                        <span class="material-symbols-outlined text-[16px]" data-icon="expand_more">expand_more</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Read-only by Default Toggle -->
+            <div class="p-md flex items-center justify-between hover:bg-surface-container-highest transition-colors cursor-pointer" onclick="document.getElementById('toggle-readonly').click()">
+                <div class="flex flex-col">
+                    <span class="font-body-md text-body-md text-on-surface">Read-only by Default</span>
+                    <span class="font-label-md text-label-md text-on-surface-variant mt-xs">Open files in read-only mode to prevent accidental edits</span>
+                </div>
+                <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in ml-md shrink-0">
+                    <input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-readonly" name="toggle" type="checkbox">
+                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-readonly"></label>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<!-- BottomNavBar (Hidden on desktop based on shared component logic, but visible on mobile) -->
+
+<!-- Interactive script for toggles (optional enhancement) -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Stop event propagation for toggles inside clickable rows
+        document.querySelectorAll('.toggle-checkbox').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+    });
+</script>
+
+
+
+
+</body></html>

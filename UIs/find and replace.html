@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Mobile Code Editor</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Material Icons for UI elements -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style data-purpose="custom-fonts">
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+
+        body {
+          background-color: #1a1b26; /* Dark background matching the image */
+          color: #a9b1d6; /* Light text color */
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .editor-font {
+          font-family: 'Fira Code', monospace;
+        }
+
+        /* Custom scrollbar to match the style */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #414868;
+          border-radius: 4px;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                editor: {
+                  bg: '#1a1b26',
+                  sidebar: '#16161e',
+                  tab: '#1f2335',
+                  tabActive: '#24283b',
+                  lineNum: '#3b4261',
+                  border: '#414868',
+                  findBg: '#292e42',
+                  inputBg: '#1f2335',
+                  text: '#a9b1d6',
+                  highlight: '#7aa2f7',
+                  keyboardBar: '#24283b',
+                  btnBg: '#3b4261',
+                }
+              }
+            }
+          }
+        }
+    </script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&amp;display=swap" data-snapdom="injected-import"></head>
+<body class="h-screen w-full flex flex-col overflow-hidden bg-editor-bg text-editor-text">
+<!-- BEGIN: Top Navigation Bar -->
+<header class="flex items-center justify-between px-2 py-1 bg-editor-tab text-sm border-b border-editor-border">
+    <div class="flex items-center space-x-2">
+        <button class="p-1 hover:bg-editor-tabActive rounded text-editor-text">
+            <span class="material-icons text-xl">menu</span>
+        </button>
+        <!-- Tab -->
+        <div class="flex items-center bg-editor-tabActive px-3 py-1.5 rounded-t-md space-x-2 border-t border-x border-editor-border mt-1 relative top-[1px]">
+            <span class="material-icons text-sm text-gray-400">description</span>
+            <span class="font-medium text-gray-200">untitled.txt</span>
+            <button class="ml-2 hover:text-white transition-colors">
+                <span class="material-icons text-sm">close</span>
+            </button>
+        </div>
+    </div>
+</header>
+<!-- END: Top Navigation Bar -->
+<!-- BEGIN: Editor Toolbar -->
+<div class="flex items-center justify-between px-2 py-2 bg-editor-bg border-b border-editor-border text-editor-text">
+    <button class="p-1 hover:bg-editor-tabActive rounded">
+        <span class="material-icons text-xl">arrow_back</span>
+    </button>
+    <div class="text-sm font-medium opacity-70">New file</div>
+    <div class="flex items-center space-x-1">
+        <button class="p-1 hover:bg-editor-tabActive rounded">
+            <span class="material-icons text-xl">search</span>
+        </button>
+        <button class="p-1 hover:bg-editor-tabActive rounded">
+            <span class="material-icons text-xl">save</span>
+        </button>
+        <button class="p-1 hover:bg-editor-tabActive rounded">
+
+        </button>
+        <button class="p-1 hover:bg-editor-tabActive rounded">
+            <span class="material-icons text-xl">more_vert</span>
+        </button>
+    </div>
+</div>
+<!-- END: Editor Toolbar -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-1 relative flex flex-col overflow-hidden">
+    <!-- BEGIN: Find & Replace Overlay -->
+    <div class="absolute top-0 left-0 right-0 z-10 p-2 pointer-events-none">
+        <div class="bg-editor-findBg rounded-lg shadow-lg border border-editor-border p-3 flex pointer-events-auto">
+            <!-- Left Side: Close Button -->
+            <div class="pr-2 pt-1">
+                <button class="text-gray-400 hover:text-white">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <!-- Right Side: Inputs and Controls -->
+            <div class="flex-1 flex flex-col space-y-2">
+                <!-- Find Row -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex-1 bg-editor-inputBg rounded px-3 py-1.5 border border-transparent focus-within:border-editor-highlight">
+                        <input class="w-full bg-transparent border-none outline-none text-editor-text text-sm p-0 text-white" placeholder="Find" type="text">
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs font-medium text-gray-400">
+                        <button class="px-2 py-1 hover:text-gray-200 text-white">Aa</button>
+                        <button class="px-2 py-1 text-editor-highlight text-white">Find</button>
+                    </div>
+                </div>
+                <!-- Replace Row -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex-1 bg-editor-inputBg rounded px-3 py-1.5 border border-transparent focus-within:border-editor-highlight">
+                        <input class="w-full bg-transparent border-none outline-none text-editor-text text-sm p-0 text-white" placeholder="Replace" type="text">
+                    </div><div class="flex items-center space-x-2 text-xs font-medium text-gray-400 ml-2"><button class="px-2 py-1 hover:text-gray-200 transition-colors text-white">Replace</button><button class="px-2 py-1 hover:text-gray-200 transition-colors text-white">Replace All</button></div>
+                </div>
+                <!-- Navigation Row -->
+                <div class="flex justify-end space-x-2 pt-1">
+                    <button class="p-1 rounded bg-editor-inputBg hover:bg-editor-btnBg text-gray-300">
+                        <span class="material-icons text-sm">arrow_upward</span>
+                    </button>
+                    <button class="p-1 rounded bg-editor-inputBg hover:bg-editor-btnBg text-gray-300">
+                        <span class="material-icons text-sm">arrow_downward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END: Find & Replace Overlay -->
+    <!-- BEGIN: Editor Grid (Line Numbers + Code) -->
+    <div class="flex-1 flex overflow-auto editor-font text-sm mt-32"> <!-- Margin top to clear overlay -->
+        <!-- Line Numbers Sidebar -->
+        <div class="w-10 bg-editor-sidebar text-editor-lineNum flex flex-col items-end pr-2 pt-2 select-none border-r border-editor-border">
+            <div class="">1</div>
+            <div class="h-4"></div> <!-- Gap for collapsed lines if any, or just spacing -->
+            <div class="">11</div>
+            <div class="">12</div>
+            <div class="bg-editor-tab w-full text-right pr-2">13</div> <!-- Active line highlight -->
+            <div class="">14</div>
+            <div class="">15</div>
+            <div class="">16</div>
+            <div class="">17</div>
+        </div>
+        <!-- Code Area -->
+        <div class="flex-1 bg-editor-bg p-2 pt-2 whitespace-pre-wrap outline-none">
+            <br><br><br> <!-- Simulating empty lines -->
+            <div class="w-full bg-editor-tab h-5 -ml-2 pl-2"></div> <!-- Active line highlight background -->
+        </div>
+    </div>
+    <!-- END: Editor Grid -->
+</main>
+<!-- END: Main Content Area -->
+<!-- BEGIN: Accessory Keyboard Toolbar -->
+
+<!-- END: Accessory Keyboard Toolbar -->
+
+
+
+
+</body></html>

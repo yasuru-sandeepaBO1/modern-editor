@@ -1,0 +1,234 @@
+<!DOCTYPE html><html lang="en" style="width: 390px; height: 884px; overflow: hidden; position: relative;"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Code Editor UI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style data-purpose="custom-utilities" type="text/tailwindcss">
+        @layer utilities {
+          .bg-editor-base {
+            background-color: #1e2430;
+          }
+          .bg-menu-base {
+            background-color: #232936;
+          }
+          .bg-menu-hover {
+            background-color: #2b3240;
+          }
+          .text-editor-muted {
+            color: #7b8598;
+          }
+          .border-menu-separator {
+            border-color: #363d4d;
+          }
+          .bg-keyboard-bar {
+            background-color: #303541;
+          }
+          .bg-keyboard-btn {
+            background-color: #434958;
+          }
+          .text-keyboard-btn {
+            color: #a8b2c4;
+          }
+        }
+    </style>
+    <style data-purpose="font-setup">
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+        body {
+          font-family: 'Roboto', sans-serif;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link data-snapdom="injected-import" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&amp;display=swap" rel="stylesheet"><link class="" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"></head>
+<body class="bg-[#191d26] h-screen w-screen overflow-hidden text-white flex flex-col relative select-none">
+<!-- BEGIN: Top Bar -->
+<header class="flex items-center justify-between px-3 py-2 bg-[#2a303d] h-12 shadow-md relative z-10">
+    <div class="flex items-center space-x-4">
+        <button class="p-1 text-gray-400 hover:text-white transition-colors" id="hamburger-menu-btn">
+            <span class="material-symbols-outlined text-xl">menu</span>
+        </button>
+    </div>
+    <div class="flex-1 flex items-center justify-center">
+        <div class="bg-menu-base flex items-center px-4 py-1 rounded-t-lg relative bottom-[-6px] border-b-2 border-[#1e2430]">
+            <i class="fa-regular fa-file-lines text-xs text-gray-400 mr-2"></i>
+            <span class="text-sm font-medium text-gray-300">untitled.txt</span>
+        </div>
+    </div>
+    <div class="flex items-center space-x-4">
+        <button class="p-1 text-gray-400 hover:text-white transition-colors" id="options-menu-btn">
+            <span class="material-symbols-outlined text-xl">more_vert</span>
+        </button>
+    </div>
+</header>
+<!-- END: Top Bar -->
+<!-- BEGIN: Sub Header -->
+<div class="flex items-center px-4 py-2 bg-menu-base h-10 shadow-sm relative z-10 border-b border-menu-separator">
+    <button class="mr-4 text-gray-400">
+        <i class="fa-solid fa-arrow-left text-sm"></i>
+    </button>
+    <span class="text-sm text-gray-500">New file</span>
+</div>
+<!-- END: Sub Header -->
+<!-- BEGIN: Main Editor Area -->
+<main class="flex-1 flex relative overflow-hidden bg-editor-base">
+    <!-- Gutter -->
+    <div class="w-10 bg-[#191d26] flex flex-col items-end py-1 px-2 border-r border-[#262c38]">
+        <span class="text-xs text-[#4b5569]">1</span>
+    </div>
+    <!-- Code Content -->
+    <div class="flex-1 p-2">
+        <!-- Empty code area -->
+    </div>
+    <!-- BEGIN: Single Menu Scrim -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm z-20 transition-opacity" id="menu-scrim"></div>
+    <!-- END: Single Menu Scrim -->
+    <!-- BEGIN: Overlay Menu -->
+    <div class="absolute right-0 top-0 w-72 bg-menu-base shadow-2xl flex flex-col overflow-y-auto border-l border-[#191d26] z-20 pb-4 hidden" id="options-menu" style="max-height: calc(100% - 24px);">
+        <!-- Menu Item Group 1 -->
+        <div class="py-2 border-b border-menu-separator">
+        </div>
+        <!-- Menu Item Group 2 -->
+        <div class="py-2 border-b border-menu-separator">
+        </div>
+        <!-- Menu Item Group 3 -->
+        <div class="py-2 border-b border-menu-separator">
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <i class="fa-solid fa-expand w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg"></i>
+                <div class="flex-1 flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-200">Fullscreen</span>
+                </div>
+            </button>
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">wrap_text</span>
+                <span class="text-sm font-medium text-gray-200">Word wrap</span>
+            </button><button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+            <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">horizontal_rule</span>
+            <span class="text-sm font-medium text-gray-200">Hide toolbar</span>
+        </button>
+        </div>
+        <!-- Menu Item Group 4 (Go to line) -->
+        <div class="py-3 px-4 border-b border-menu-separator">
+            <div class="bg-[#363d4d] rounded px-3 py-2 flex items-center">
+                <input class="bg-transparent border-none text-sm text-gray-200 placeholder-gray-400 w-full focus:ring-0 p-0" placeholder="Go to line..." type="text">
+            </div>
+        </div>
+        <!-- Menu Item Group 5 (Toolbar Actions) -->
+        <div class="py-3 px-6 flex justify-between items-center border-b border-menu-separator">
+            <button class="text-[#94a3b8] hover:text-white p-2"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="text-[#94a3b8] hover:text-white p-2"><i class="fa-solid fa-rotate-right"></i></button>
+            <button class="p-2">
+                <i class="fa-solid fa-circle-half-stroke text-lg text-[#94a3b8] hover:text-white transition-colors"></i>
+            </button>
+        </div>
+        <!-- Menu Item Group 6 (Bottom Actions) -->
+        <div class="py-2">
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group opacity-50 cursor-not-allowed">
+                <i class="fa-solid fa-share-nodes w-6 text-center text-[#94a3b8] mr-3 text-lg"></i>
+                <span class="text-sm font-medium text-gray-400">Share</span>
+            </button>
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <i class="fa-solid fa-square-pen w-6 text-center text-[#94a3b8] mr-3 text-lg group-hover:text-white"></i>
+                <span class="text-sm font-medium text-gray-200">Rename</span>
+            </button>
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <i class="fa-solid fa-gear w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg"></i>
+                <span class="text-sm font-medium text-gray-200">Settings</span>
+            </button>
+        </div>
+    </div>
+    <!-- END: Overlay Menu -->
+    <!-- BEGIN: File Menu Overlay -->
+    <div class="absolute left-0 top-0 w-72 bg-menu-base shadow-2xl flex flex-col overflow-y-auto border-r border-[#191d26] z-20 pb-4" id="file-menu" style="max-height: calc(100% - 24px);">
+        <!-- Group 1: File Operations -->
+        <div class="py-2 border-b border-menu-separator">
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">draft</span>
+                <span class="text-sm font-medium text-gray-200">Open</span>
+            </button>
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">add_box</span>
+                <span class="text-sm font-medium text-gray-200">New File</span>
+            </button>
+
+        </div>
+        <!-- Group 2: Save Operations -->
+        <div class="py-2 border-b border-menu-separator">
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">save</span>
+                <span class="text-sm font-medium text-gray-200">Save</span>
+            </button>
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">save_as</span>
+                <span class="text-sm font-medium text-gray-200">Save As</span>
+            </button><button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+            <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">drive_file_rename_outline</span>
+            <span class="text-sm font-medium text-gray-200">Rename</span>
+        </button>
+        </div>
+        <!-- Group 3: Settings -->
+        <div class="py-2">
+            <button class="w-full flex items-center px-5 py-3 hover:bg-menu-hover transition-colors text-left group">
+                <span class="material-symbols-outlined w-6 text-center text-[#94a3b8] group-hover:text-white mr-3 text-lg">settings</span>
+                <span class="text-sm font-medium text-gray-200">Settings</span>
+            </button>
+        </div>
+    </div>
+    <!-- END: File Menu Overlay --></main>
+<!-- END: Main Editor Area -->
+<!-- BEGIN: Keyboard Accessory Bar -->
+<div class="bg-[#1e2430] w-full flex flex-col pb-4 border-t border-[#363d4d] z-10 relative">
+    <!-- First Row -->
+    <!-- Second Row -->
+    <!-- Home indicator line -->
+    <div class="w-full flex justify-center pt-1 pb-1">
+        <div class="w-32 h-1 bg-gray-300 rounded-full"></div>
+    </div>
+</div>
+<!-- END: Keyboard Accessory Bar -->
+<style data-purpose="hide-scrollbars">
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+</style>
+<script>
+    // Simple menu toggle logic for visual testing
+    document.addEventListener('DOMContentLoaded', () => {
+      const hamburgerBtn = document.getElementById('hamburger-menu-btn');
+      const optionsBtn = document.getElementById('options-menu-btn');
+      const fileMenu = document.getElementById('file-menu');
+      const optionsMenu = document.getElementById('options-menu');
+      const scrim = document.getElementById('menu-scrim');
+
+      function closeAll() {
+        fileMenu.classList.add('hidden');
+        optionsMenu.classList.add('hidden');
+        scrim.classList.add('hidden');
+      }
+
+      hamburgerBtn.addEventListener('click', () => {
+        closeAll();
+        fileMenu.classList.remove('hidden');
+        scrim.classList.remove('hidden');
+      });
+
+      optionsBtn.addEventListener('click', () => {
+        closeAll();
+        optionsMenu.classList.remove('hidden');
+        scrim.classList.remove('hidden');
+      });
+
+      scrim.addEventListener('click', closeAll);
+
+      // Initially show file menu for demonstration as requested by prompt
+      fileMenu.classList.remove('hidden');
+      scrim.classList.remove('hidden');
+    });
+</script>
+
+
+
+
+<div id="snapdom-sandbox" data-snapdom-sandbox="true" aria-hidden="true" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>

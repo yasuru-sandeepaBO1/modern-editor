@@ -1,0 +1,279 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Kotlin Editor - Version History</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-on-surface": "#2c3138",
+                      "surface-container-high": "#252a32",
+                      "background": "#0f141b",
+                      "on-secondary-fixed": "#121c2b",
+                      "on-secondary": "#273140",
+                      "secondary-fixed": "#d9e3f8",
+                      "surface-tint": "#accaea",
+                      "on-secondary-container": "#abb6c9",
+                      "inverse-surface": "#dee2ed",
+                      "primary-fixed-dim": "#accaea",
+                      "primary-container": "#7794b2",
+                      "tertiary-fixed-dim": "#c1c6d7",
+                      "on-tertiary-container": "#242a37",
+                      "surface-container-highest": "#30353d",
+                      "on-error-container": "#ffdad6",
+                      "on-error": "#690005",
+                      "tertiary-fixed": "#dde2f4",
+                      "on-primary-fixed": "#001d33",
+                      "secondary-container": "#3d4758",
+                      "tertiary": "#c1c6d7",
+                      "inverse-primary": "#44617d",
+                      "surface-container-low": "#171c23",
+                      "surface-bright": "#343941",
+                      "on-primary-fixed-variant": "#2c4964",
+                      "primary-fixed": "#cee5ff",
+                      "outline": "#8d9198",
+                      "primary": "#accaea",
+                      "surface": "#0f141b",
+                      "on-tertiary-fixed": "#161c28",
+                      "on-secondary-fixed-variant": "#3d4758",
+                      "on-tertiary": "#2a303e",
+                      "surface-container": "#1b2027",
+                      "on-background": "#dee2ed",
+                      "error-container": "#93000a",
+                      "on-surface-variant": "#c3c7ce",
+                      "on-surface": "#dee2ed",
+                      "surface-variant": "#30353d",
+                      "error": "#ffb4ab",
+                      "surface-dim": "#0f141b",
+                      "outline-variant": "#43474d",
+                      "secondary-fixed-dim": "#bdc7db",
+                      "secondary": "#bdc7db",
+                      "on-tertiary-fixed-variant": "#414755",
+                      "on-primary-container": "#0a2c45",
+                      "surface-container-lowest": "#090e15",
+                      "tertiary-container": "#8b91a1",
+                      "on-primary": "#13334c",
+                      "success": "#4ade80",
+                      "success-container": "#14532d",
+                      "on-success-container": "#bbf7d0"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "tab-height": "36px",
+                      "gutter-editor": "16px",
+                      "keyboard-accessory-height": "40px",
+                      "unit": "4px",
+                      "toolbar-height": "48px",
+                      "menu-item-height": "44px"
+              },
+              "fontFamily": {
+                      "label-xs": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "code-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "code-md": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "label-xs": [
+                              "10px",
+                              {
+                                      "lineHeight": "12px",
+                                      "letterSpacing": "0.5px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "code-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "code-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "21px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col pt-toolbar-height pb-keyboard-accessory-height md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface fixed top-0 w-full h-toolbar-height border-b border-secondary-container dark:border-secondary-container flex items-center justify-between px-4 z-50 transition-colors duration-200">
+    <div class="flex items-center gap-4">
+        <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors group">
+            <span class="material-symbols-outlined text-primary dark:text-primary group-hover:text-primary-fixed" data-icon="arrow_back" style="color: #857d39 !important;">arrow_back</span>
+        </button>
+        <h1 class="font-headline-sm text-headline-sm font-semibold text-on-surface dark:text-on-surface tracking-tight">Main.kt — Version History</h1>
+    </div>
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors group text-on-surface-variant dark:text-on-surface-variant">
+        <span class="material-symbols-outlined group-hover:text-primary" data-icon="save">save</span>
+    </button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-3xl mx-auto px-4 py-6 md:px-8 md:py-10">
+    <!-- Timeline Container -->
+    <div class="relative pl-6 md:pl-8 border-l border-secondary-container/50 ml-4">
+        <!-- Entry 1: Current / Snapshot -->
+        <div class="relative mb-12 group">
+            <!-- Timeline Node -->
+            <div class="absolute -left-[31px] md:-left-[39px] w-4 h-4 rounded-full bg-primary ring-4 ring-background border-2 border-primary z-10 top-1 shadow-[0_0_12px_rgba(172,202,234,0.4)]" style="box-shadow: 0 0 12px rgba(133, 125, 57, 0.4) !important;"></div>
+            <!-- Content Card -->
+            <div class="bg-surface-container rounded-xl p-5 border border-surface-container-highest hover:border-primary/30 transition-all duration-300 shadow-sm relative overflow-hidden">
+                <!-- Subtle gradient glow -->
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-3 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-headline-sm text-headline-sm text-primary" style="color: #857d39 !important;">v12</h2>
+                        <span class="px-2 py-1 rounded bg-surface-container-highest text-primary-fixed-dim font-label-xs text-label-xs uppercase tracking-wider">DELTA</span>
+                        <span class="font-code-sm text-code-sm text-on-surface-variant opacity-70">8f2a1b</span>
+                    </div>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 2 mins ago
+                        </span>
+                </div>
+                <div class="mb-4 relative z-10">
+                    <p class="font-body-md text-body-md text-on-surface">Refined syntax highlighting for sealed classes and objects.</p>
+                    <div class="flex items-center gap-4 mt-2 font-code-sm text-code-sm">
+                        <span class="text-success flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">add</span> +42 lines</span>
+                        <span class="text-error flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">remove</span> -12 lines</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 relative z-10">
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant hover:border-outline text-on-surface hover:bg-surface-variant transition-colors font-body-sm text-body-sm font-medium">
+                        <span class="material-symbols-outlined text-[18px]">difference</span> View Diff
+                    </button>
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-colors font-body-sm text-body-sm font-medium">
+                        <span class="material-symbols-outlined text-[18px]">history</span> Restore
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Entry 2: Delta -->
+        <div class="relative mb-12 group">
+            <!-- Timeline Node -->
+            <div class="absolute -left-[31px] md:-left-[39px] w-4 h-4 rounded-full bg-surface-container ring-4 ring-background border-2 border-outline-variant z-10 top-1 group-hover:border-primary-container transition-colors"></div>
+            <!-- Content Card -->
+            <div class="bg-surface-container/50 rounded-xl p-5 border border-surface-container-highest hover:border-outline-variant transition-all duration-300">
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-3">
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-headline-sm text-headline-sm text-on-surface">v11</h2>
+                        <span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant font-label-xs text-label-xs uppercase tracking-wider border border-surface-container-highest">DELTA</span>
+                        <span class="font-code-sm text-code-sm text-on-surface-variant opacity-70">a4c9e2</span>
+                    </div>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 1 hour ago
+                        </span>
+                </div>
+                <div class="mb-4">
+                    <p class="font-body-md text-body-md text-on-surface-variant">Added login logic and integrated AuthRepository.</p>
+                    <div class="flex items-center gap-4 mt-2 font-code-sm text-code-sm">
+                        <span class="text-success flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">add</span> +128 lines</span>
+                        <span class="text-error flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">remove</span> -5 lines</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant hover:border-outline text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors font-body-sm text-body-sm font-medium">
+                        <span class="material-symbols-outlined text-[18px]">difference</span> View Diff
+                    </button>
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-colors font-body-sm text-body-sm font-medium">
+                        <span class="material-symbols-outlined text-[18px]">history</span> Restore
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Entry 3: Delta -->
+        <div class="relative mb-12 group">
+            <!-- Timeline Node -->
+            <div class="absolute -left-[31px] md:-left-[39px] w-4 h-4 rounded-full bg-surface-container ring-4 ring-background border-2 border-outline-variant z-10 top-1 group-hover:border-primary-container transition-colors"></div>
+            <!-- Content Card -->
+            <div class="bg-surface-container/50 rounded-xl p-5 border border-surface-container-highest hover:border-outline-variant transition-all duration-300 opacity-80 hover:opacity-100">
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-3">
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-headline-sm text-headline-sm text-on-surface">v10</h2>
+                        <span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant font-label-xs text-label-xs uppercase tracking-wider border border-surface-container-highest">SNAPSHOT</span>
+                        <span class="font-code-sm text-code-sm text-on-surface-variant opacity-70">7d3f9a</span>
+                    </div>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Yesterday
+                        </span>
+                </div>
+                <div class="mb-4">
+                    <p class="font-body-md text-body-md text-on-surface-variant">Initial scaffolding for MainViewModel and dependencies.</p>
+                    <div class="flex items-center gap-4 mt-2 font-code-sm text-code-sm">
+                        <span class="text-success flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">add</span> +56 lines</span>
+                        <span class="text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">remove</span> 0 lines</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant hover:border-outline text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors font-body-sm text-body-sm font-medium">
+                        <span class="material-symbols-outlined text-[18px]">difference</span> View Diff
+                    </button>
+                    <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-colors font-body-sm text-body-sm font-medium">
+                        <span class="material-symbols-outlined text-[18px]">history</span> Restore
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Fade Out Indicator -->
+        <div class="relative h-16 bg-gradient-to-b from-secondary-container/50 to-transparent w-[1px] -ml-[1px] -left-[16px] md:-left-[20px]"></div>
+    </div>
+</main>
+
+
+</body></html>

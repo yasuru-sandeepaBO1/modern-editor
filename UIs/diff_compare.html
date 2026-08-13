@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Diff Comparison - Kotlin Editor</title>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind Config from Brand Anchors -->
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#1b2027",
+                      "on-primary-fixed": "#001d33",
+                      "surface-container-lowest": "#090e15",
+                      "on-surface": "#dee2ed",
+                      "error-container": "#93000a",
+                      "primary-fixed": "#cee5ff",
+                      "inverse-on-surface": "#2c3138",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary-fixed": "#121c2b",
+                      "tertiary-container": "#8b91a1",
+                      "on-tertiary-fixed-variant": "#414755",
+                      "primary-fixed-dim": "#accaea",
+                      "on-secondary": "#273140",
+                      "on-primary-fixed-variant": "#2c4964",
+                      "on-secondary-fixed-variant": "#3d4758",
+                      "on-tertiary-container": "#242a37",
+                      "surface-bright": "#343941",
+                      "surface-container-highest": "#30353d",
+                      "secondary": "#bdc7db",
+                      "surface-tint": "#accaea",
+                      "surface-variant": "#30353d",
+                      "on-tertiary": "#2a303e",
+                      "outline-variant": "#43474d",
+                      "on-background": "#dee2ed",
+                      "background": "#0f141b",
+                      "inverse-surface": "#dee2ed",
+                      "surface-container-high": "#252a32",
+                      "error": "#ffb4ab",
+                      "primary-container": "#7794b2",
+                      "surface-container-low": "#171c23",
+                      "secondary-fixed-dim": "#bdc7db",
+                      "primary": "#accaea",
+                      "secondary-fixed": "#d9e3f8",
+                      "on-tertiary-fixed": "#161c28",
+                      "tertiary": "#c1c6d7",
+                      "tertiary-fixed-dim": "#c1c6d7",
+                      "surface": "#0f141b",
+                      "surface-dim": "#0f141b",
+                      "on-error": "#690005",
+                      "on-primary": "#13334c",
+                      "inverse-primary": "#44617d",
+                      "tertiary-fixed": "#dde2f4",
+                      "on-primary-container": "#0a2c45",
+                      "on-secondary-container": "#abb6c9",
+                      "outline": "#8d9198",
+                      "secondary-container": "#3d4758",
+                      "on-surface-variant": "#c3c7ce"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "menu-item-height": "44px",
+                      "gutter-editor": "16px",
+                      "toolbar-height": "48px",
+                      "keyboard-accessory-height": "40px",
+                      "unit": "4px",
+                      "tab-height": "36px"
+              },
+              "fontFamily": {
+                      "headline-sm": ["Hanken Grotesk"],
+                      "code-sm": ["JetBrains Mono"],
+                      "label-xs": ["JetBrains Mono"],
+                      "body-md": ["Hanken Grotesk"],
+                      "body-sm": ["Hanken Grotesk"],
+                      "code-md": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                      "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "label-xs": ["10px", {"lineHeight": "12px", "letterSpacing": "0.5px", "fontWeight": "500"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "code-md": ["14px", {"lineHeight": "21px", "fontWeight": "400"}]
+              }
+            },
+          }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom syntax highlighting colors for JetBrains Mono code block */
+        .keyword { color: #cc7832; font-weight: 500; }
+        .string { color: #6a8759; }
+        .function { color: #ffc66d; }
+        .type { color: #a9b7c6; }
+    </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-screen flex flex-col overflow-hidden font-body-md antialiased">
+<!-- TOP BAR -->
+<header class="flex-shrink-0 h-toolbar-height flex items-center justify-between px-4 w-full z-50 border-b border-secondary-container bg-surface transition-colors duration-200">
+    <!-- Left Action -->
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant text-primary transition-colors">
+        <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+    </button>
+    <!-- Center Title -->
+    <div class="flex flex-col items-center justify-center text-center">
+        <h1 class="font-headline-sm text-headline-sm text-on-surface">Comparing v11 → v12</h1>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Main.kt</span>
+    </div>
+    <!-- Right Action -->
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface-variant transition-colors">
+        <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+    </button>
+</header>
+<!-- DIFF CONTENT AREA -->
+<main class="flex-1 overflow-y-auto w-full bg-surface">
+    <div class="w-full flex flex-col font-code-md text-code-md">
+        <!-- Context line (unchanged) -->
+        <div class="flex w-full hover:bg-surface-variant/50 transition-colors">
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/50 border-r border-secondary-container select-none">10</div>
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/50 border-r border-secondary-container select-none">10</div>
+            <div class="w-8 flex-shrink-0 text-center py-1 text-on-surface-variant/30 select-none"></div>
+            <div class="flex-1 py-1 pl-2 text-on-surface overflow-x-auto whitespace-pre"><span class="keyword">val</span> server = HttpServer.<span class="function">create</span>()</div>
+        </div>
+        <!-- Removed Line -->
+        <div class="flex w-full" style="background-color: rgba(147, 0, 10, 0.15);">
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/70 border-r border-secondary-container select-none" style="color: #ffb4ab;">11</div>
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/30 border-r border-secondary-container select-none">-</div>
+            <div class="w-8 flex-shrink-0 text-center py-1 select-none font-bold" style="color: #ffb4ab;">-</div>
+            <div class="flex-1 py-1 pl-2 text-on-surface overflow-x-auto whitespace-pre"><span class="type">server</span>.<span class="function">start</span>(<span class="string">8080</span>)</div>
+        </div>
+        <!-- Added Line 1 -->
+        <div class="flex w-full" style="background-color: rgba(3, 136, 46, 0.15);">
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/30 border-r border-secondary-container select-none">-</div>
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/70 border-r border-secondary-container select-none" style="color: #8bfb91;">11</div>
+            <div class="w-8 flex-shrink-0 text-center py-1 select-none font-bold" style="color: #8bfb91;">+</div>
+            <div class="flex-1 py-1 pl-2 text-on-surface overflow-x-auto whitespace-pre"><span class="type">server</span>.<span class="function">bind</span>(<span class="type">InetSocketAddress</span>(<span class="string">8080</span>), <span class="string">0</span>)</div>
+        </div>
+        <!-- Added Line 2 -->
+        <div class="flex w-full" style="background-color: rgba(3, 136, 46, 0.15);">
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/30 border-r border-secondary-container select-none">-</div>
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/70 border-r border-secondary-container select-none" style="color: #8bfb91;">12</div>
+            <div class="w-8 flex-shrink-0 text-center py-1 select-none font-bold" style="color: #8bfb91;">+</div>
+            <div class="flex-1 py-1 pl-2 text-on-surface overflow-x-auto whitespace-pre"><span class="type">server</span>.<span class="function">start</span>()</div>
+        </div>
+        <!-- Context line (unchanged) -->
+        <div class="flex w-full hover:bg-surface-variant/50 transition-colors">
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/50 border-r border-secondary-container select-none">12</div>
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/50 border-r border-secondary-container select-none">13</div>
+            <div class="w-8 flex-shrink-0 text-center py-1 text-on-surface-variant/30 select-none"></div>
+            <div class="flex-1 py-1 pl-2 text-on-surface overflow-x-auto whitespace-pre"><span class="function">println</span>(<span class="string">"Server running on port 8080"</span>)</div>
+        </div>
+        <!-- Context line (unchanged) -->
+        <div class="flex w-full hover:bg-surface-variant/50 transition-colors">
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/50 border-r border-secondary-container select-none">13</div>
+            <div class="w-12 flex-shrink-0 text-right pr-2 py-1 text-on-surface-variant/50 border-r border-secondary-container select-none">14</div>
+            <div class="w-8 flex-shrink-0 text-center py-1 text-on-surface-variant/30 select-none"></div>
+            <div class="flex-1 py-1 pl-2 text-on-surface overflow-x-auto whitespace-pre">}</div>
+        </div>
+    </div>
+</main>
+<!-- BOTTOM ACTION BUTTON -->
+<footer class="flex-shrink-0 w-full px-4 py-4 bg-surface border-t border-secondary-container z-50">
+    <button class="w-full flex items-center justify-center gap-2 rounded-xl h-12 shadow-sm hover:opacity-90 active:scale-[0.98] transition-all" onclick="document.getElementById('rollback-modal').classList.remove('hidden')" style="background-color: #7F52FF; color: #FFFFFF;">
+        <span class="material-symbols-outlined" data-icon="history">history</span>
+        <span class="font-headline-sm text-headline-sm tracking-wide text-[16px]">Rollback to v11</span>
+    </button>
+</footer>
+<!-- Modal Scrim -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 hidden" id="rollback-modal" onclick="if(event.target === this) this.classList.add('hidden')">
+    <!-- Modal Container -->
+    <div class="bg-surface-container-high w-full max-w-sm rounded-xl shadow-xl border border-outline-variant overflow-hidden">
+        <div class="p-6">
+            <h2 class="font-headline-sm text-headline-sm text-on-surface mb-2">Roll back to v11?</h2>
+            <p class="text-body-md text-on-surface-variant">Any unsaved changes in the current file will be lost.</p>
+        </div>
+        <!-- Actions -->
+        <div class="flex justify-end gap-2 px-4 py-4 bg-surface-container-highest/30">
+            <button class="px-4 h-10 flex items-center justify-center rounded-full font-bold text-primary hover:bg-surface-variant transition-colors" onclick="document.getElementById('rollback-modal').classList.add('hidden')">
+                CANCEL
+            </button>
+            <button class="px-4 h-10 flex items-center justify-center rounded-full font-bold text-white shadow-sm hover:opacity-90 active:scale-[0.98] transition-all" style="background-color: #7F52FF;">
+                ROLL BACK
+            </button>
+        </div>
+    </div>
+</div></body></html>
