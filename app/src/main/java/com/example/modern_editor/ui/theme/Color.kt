@@ -1,32 +1,79 @@
 package com.example.modern_editor.ui.theme
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 // Design system: docs/design_system.md — the locked 8-color palette.
 // Nothing outside this file's values may appear anywhere in the app.
 // There is no accent color in this project: #475163 doubles as the surface for
 // primary actions and active states.
+// Light theme reuses the same eight hex values with roles swapped.
+
+data class EditorPalette(
+    val screenBackground: Color,
+    val headerSurface: Color,
+    val editorSurface: Color,
+    val gutterText: Color,
+    val inactiveSurface: Color,
+    val buttonSurface: Color,
+    val buttonText: Color,
+    val primaryText: Color,
+)
+
+val DarkPalette = EditorPalette(
+    screenBackground = Color(0xFF31323F),
+    headerSurface = Color(0xFF353B47),
+    editorSurface = Color(0xFF1E2430),
+    gutterText = Color(0xFF4C556B),
+    inactiveSurface = Color(0xFF272B36),
+    buttonSurface = Color(0xFF475163),
+    buttonText = Color(0xFFC4C8D1),
+    primaryText = Color(0xFFFFFFFF),
+)
+
+val LightPalette = EditorPalette(
+    screenBackground = Color(0xFFFFFFFF),
+    headerSurface = Color(0xFFC4C8D1),
+    editorSurface = Color(0xFFFFFFFF),
+    gutterText = Color(0xFF4C556B),
+    inactiveSurface = Color(0xFFC4C8D1),
+    buttonSurface = Color(0xFF475163),
+    buttonText = Color(0xFF353B47),
+    primaryText = Color(0xFF31323F),
+)
+
+val LocalEditorPalette = staticCompositionLocalOf { DarkPalette }
 
 /** Screen / status bar background. */
-val ScreenBackground = Color(0xFF31323F)
+val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.screenBackground
 
 /** Header / top bar / toolbar background. */
-val HeaderSurface = Color(0xFF353B47)
+val HeaderSurface: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.headerSurface
 
 /** Editor content surface / gutter background / active tab. */
-val EditorSurface = Color(0xFF1E2430)
+val EditorSurface: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.editorSurface
 
 /** Line-number / gutter text. */
-val GutterText = Color(0xFF4C556B)
+val GutterText: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.gutterText
 
 /** Inactive tab background — also the separator/divider tone. */
-val InactiveSurface = Color(0xFF272B36)
+val InactiveSurface: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.inactiveSurface
 
 /** Button surface / primary actions / active states. */
-val ButtonSurface = Color(0xFF475163)
+val ButtonSurface: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.buttonSurface
 
 /** Button text / secondary UI text. */
-val ButtonText = Color(0xFFC4C8D1)
+val ButtonText: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.buttonText
 
 /** Primary/emphasized text (titles, filenames, headings). */
-val PrimaryText = Color(0xFFFFFFFF)
+val PrimaryText: Color
+    @Composable @ReadOnlyComposable get() = LocalEditorPalette.current.primaryText

@@ -63,7 +63,9 @@ import com.example.modern_editor.ui.theme.HeaderSurface
 import com.example.modern_editor.ui.theme.InactiveSurface
 import com.example.modern_editor.ui.theme.PrimaryText
 
-/** Compact popup anchored top-right, opened by the Editor's overflow (three-dot) icon. */
+/** Compact popup anchored top-right, opened by the Editor's overflow (three-dot) icon.
+ * Confirmed optional features live here: Full Screen, Hide Toolbar, Share, and Go to Line.
+ */
 @Composable
 fun OptionsMenu(
     open: Boolean,

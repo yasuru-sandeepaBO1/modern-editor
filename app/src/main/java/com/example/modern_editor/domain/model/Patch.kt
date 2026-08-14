@@ -4,5 +4,6 @@ data class Patch(
     val id: String,
     val versionId: String,
     val diff: String,
-    val timestamp: Long
+    val timestamp: Long,
+    val previousVersionId: String? = null
 )

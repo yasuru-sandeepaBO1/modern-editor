@@ -21,6 +21,9 @@ sealed class Routes(val route: String) {
     }
     data object FilesList : Routes("files_list")
     data object Settings : Routes("settings")
-    data object VersionHistory : Routes("version_history")
+    data object VersionHistory : Routes("version_history?fileId={fileId}") {
+        const val ARG_FILE_ID = "fileId"
+        fun withFile(fileId: String): String = "version_history?fileId=${Uri.encode(fileId)}"
+    }
     data object DiffCompare : Routes("diff_compare")
 }

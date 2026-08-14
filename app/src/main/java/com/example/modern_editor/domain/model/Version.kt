@@ -10,5 +10,6 @@ data class Version(
     val fileId: String,
     val type: VersionType,
     val timestamp: Long,
-    val label: String? = null
+    val label: String? = null,
+    val versionNumber: Int = 1
 )
