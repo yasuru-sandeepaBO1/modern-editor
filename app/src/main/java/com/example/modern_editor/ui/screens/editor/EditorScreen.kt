@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -102,7 +100,14 @@ import com.example.modern_editor.ui.theme.SyntaxColors
 import kotlinx.coroutines.launch
 
 private val ACCESSORY_KEYWORDS = listOf("val", "var", "fun", "if", "else", "for", "while", "return", "class")
-private val ACCESSORY_SYMBOLS = listOf("{", "}", "(", ")", ";", ":", "->", "\"")
+// Symbols are far narrower than keywords, so this row needs more of them to fill the
+// same width — with too few, SpaceBetween leaves ugly gaps. Chosen by how expensive they
+// are on the system keyboard: braces, brackets, angles and `=` all sit two symbol-pages
+// deep, and the multi-character Kotlin operators can't be typed in one tap at all.
+private val ACCESSORY_SYMBOLS = listOf(
+    "{", "}", "(", ")", "[", "]", "<", ">",
+    "=", "->", "?.", "?:", "!!", ".."
+)
 
 /**
  * The current-line highlight. InactiveSurface (#272b36) sits one step up from the
@@ -657,12 +662,11 @@ fun EditorScreen(
 }
 
 /**
- * The token rows wrap instead of scrolling horizontally. The reference markup scrolls,
- * but at this screen width the keyword row overflows and the last token gets sliced
- * mid-glyph, which reads as broken and hides keys behind a scroll gesture. Wrapping
- * keeps every token fully drawn and one tap away at any width.
+ * Exactly two rows. Each button keeps its own natural width — forcing `{` to be as wide
+ * as `return` reads badly — and the rows are stretched edge to edge with
+ * [Arrangement.SpaceBetween]. The gaps take up the slack, so both rows start at the same
+ * left edge and finish at the same right edge even though their tokens differ in width.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AccessoryToolbar(onInsert: (String) -> Unit) {
     Column(
@@ -672,20 +676,18 @@ private fun AccessoryToolbar(onInsert: (String) -> Unit) {
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            ACCESSORY_KEYWORDS.forEach { token -> AccessoryButton(token) { onInsert(token) } }
-        }
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            ACCESSORY_SYMBOLS.forEach { token -> AccessoryButton(token) { onInsert(token) } }
-        }
+        AccessoryRow(ACCESSORY_KEYWORDS, onInsert)
+        AccessoryRow(ACCESSORY_SYMBOLS, onInsert)
+    }
+}
+
+@Composable
+private fun AccessoryRow(tokens: List<String>, onInsert: (String) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        tokens.forEach { token -> AccessoryButton(token) { onInsert(token) } }
     }
 }
 
