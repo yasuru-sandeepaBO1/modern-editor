@@ -12,6 +12,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.modern_editor.recovery.RecoveryHolder
+import com.example.modern_editor.version.DiffSession
+import com.example.modern_editor.version.VersionSession
 import com.example.modern_editor.ui.components.RecoveryDialog
 import com.example.modern_editor.ui.screens.diffcompare.DiffCompareScreen
 import com.example.modern_editor.ui.screens.editor.EditorScreen
@@ -89,7 +91,11 @@ fun EditorNavGraph(navController: NavHostController = rememberNavController()) {
                 initialFileUri = backStackEntry.arguments?.getString(Routes.Editor.ARG_FILE_URI),
                 initialFileName = backStackEntry.arguments?.getString(Routes.Editor.ARG_FILE_NAME),
                 initialFileType = backStackEntry.arguments?.getString(Routes.Editor.ARG_FILE_TYPE),
-                onOpenVersionHistory = { navController.navigate(Routes.VersionHistory.route) },
+                onOpenVersionHistory = {
+                    navController.navigate(
+                        Routes.VersionHistory.withFile(VersionSession.fileId.ifBlank { "unknown" })
+                    )
+                },
                 onOpenSettings = { navController.navigate(Routes.Settings.route) },
                 onBack = { navController.popBackStack() }
             )
@@ -103,8 +109,18 @@ fun EditorNavGraph(navController: NavHostController = rememberNavController()) {
         composable(Routes.Settings.route) {
             SettingsScreen(onBack = { navController.popBackStack() })
         }
-        composable(Routes.VersionHistory.route) {
+        composable(
+            route = Routes.VersionHistory.route,
+            arguments = listOf(
+                navArgument(Routes.VersionHistory.ARG_FILE_ID) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
             VersionHistoryScreen(
+                fileId = backStackEntry.arguments?.getString(Routes.VersionHistory.ARG_FILE_ID),
                 onOpenDiffCompare = { navController.navigate(Routes.DiffCompare.route) },
                 onBack = { navController.popBackStack() }
             )

@@ -94,6 +94,7 @@ import com.example.modern_editor.editor.highlight.SyntaxHighlighter
 import com.example.modern_editor.editor.rememberEditorState
 import com.example.modern_editor.recovery.RecoveryHolder
 import com.example.modern_editor.recovery.RecoveryRecord
+import com.example.modern_editor.version.VersionSession
 import com.example.modern_editor.ui.components.FileMenu
 import com.example.modern_editor.ui.components.FileNameDialog
 import com.example.modern_editor.ui.components.OptionsMenu
@@ -759,7 +760,12 @@ fun EditorScreen(
             onGoToLine = ::goToLine,
             onShare = ::shareContent,
             onRename = { showRenameDialog = true },
-            onVersionHistory = onOpenVersionHistory,
+            onVersionHistory = {
+                VersionSession.fileId = currentUriString ?: "local:$currentFileName"
+                VersionSession.fileName = currentFileName
+                VersionSession.currentContent = editorState.text.toString()
+                onOpenVersionHistory()
+            },
             onSettings = onOpenSettings
         )
     }

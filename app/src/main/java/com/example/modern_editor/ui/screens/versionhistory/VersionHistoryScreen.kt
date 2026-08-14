@@ -7,6 +7,7 @@ import com.example.modern_editor.ui.screens.PlaceholderScreen
 
 @Composable
 fun VersionHistoryScreen(
+    fileId: String? = null,
     onOpenDiffCompare: () -> Unit,
     onBack: () -> Unit
 ) {
