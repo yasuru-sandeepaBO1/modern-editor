@@ -19,7 +19,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    data class LoadedFile(val content: String, val name: String, val uri: Uri, val type: FileType)
+    data class LoadedFile(
+        val content: String,
+        val name: String,
+        val uri: Uri,
+        val type: FileType,
+        val readOnly: Boolean
+    )
 
     fun clearError() {
         _error.value = null
@@ -30,16 +36,17 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val content = FileStorage.readText(app, uri)
         val name = FileStorage.displayNameOf(app, uri) ?: (uri.lastPathSegment ?: "untitled.txt")
         val type = fileTypeFromFileName(name)
-        upsertRecent(uri, name, type)
-        LoadedFile(content, name, uri, type)
+        val existing = files.getById(uri.toString())
+        upsertRecent(uri, name, type, existing?.readOnly ?: false)
+        LoadedFile(content, name, uri, type, existing?.readOnly ?: false)
     }.onFailure {
         _error.value = "Could not open that file."
     }.getOrNull()
 
-    suspend fun save(uri: Uri, text: String, name: String, type: FileType): Boolean = runCatching {
+    suspend fun save(uri: Uri, text: String, name: String, type: FileType, readOnly: Boolean): Boolean = runCatching {
         FileStorage.takePersistablePermission(app, uri)
         FileStorage.writeText(app, uri, text)
-        upsertRecent(uri, name, type)
+        upsertRecent(uri, name, type, readOnly)
         true
     }.onFailure {
         _error.value = "Could not save the file."
@@ -47,14 +54,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     suspend fun rename(uri: Uri, newName: String): Uri? = runCatching {
         val renamed = FileStorage.renameDocument(app, uri, newName) ?: uri
+        val existing = files.getById(uri.toString())
         files.delete(uri.toString())
-        upsertRecent(renamed, newName, fileTypeFromFileName(newName))
+        upsertRecent(renamed, newName, fileTypeFromFileName(newName), existing?.readOnly ?: false)
         renamed
     }.onFailure {
         _error.value = "Could not rename the file."
     }.getOrNull()
 
-    private suspend fun upsertRecent(uri: Uri, name: String, type: FileType) {
+    suspend fun setReadOnly(uri: Uri, readOnly: Boolean) {
+        val existing = files.getById(uri.toString()) ?: return
+        files.save(existing.copy(readOnly = readOnly, modifiedAt = System.currentTimeMillis()))
+    }
+
+    private suspend fun upsertRecent(uri: Uri, name: String, type: FileType, readOnly: Boolean) {
         val now = System.currentTimeMillis()
         val existing = files.getById(uri.toString())
         files.save(
@@ -65,7 +78,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 filePath = uri.toString(),
                 fileType = type,
                 createdAt = existing?.createdAt ?: now,
-                modifiedAt = now
+                modifiedAt = now,
+                readOnly = readOnly
             )
         )
     }

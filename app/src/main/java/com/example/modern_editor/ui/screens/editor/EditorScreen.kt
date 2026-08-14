@@ -85,12 +85,14 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.modern_editor.editorApp
+import com.example.modern_editor.domain.model.EditorSettings
 import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.extension
 import com.example.modern_editor.domain.model.fileTypeFromFileName
 import com.example.modern_editor.editor.highlight.KotlinHighlighter
 import com.example.modern_editor.editor.highlight.MarkdownHighlighter
 import com.example.modern_editor.editor.highlight.SyntaxHighlighter
+import com.example.modern_editor.editor.offsetForLine
 import com.example.modern_editor.editor.rememberEditorState
 import com.example.modern_editor.recovery.RecoveryHolder
 import com.example.modern_editor.recovery.RecoveryRecord
@@ -106,6 +108,7 @@ import com.example.modern_editor.ui.theme.EditorSurface
 import com.example.modern_editor.ui.theme.GutterText
 import com.example.modern_editor.ui.theme.HeaderSurface
 import com.example.modern_editor.ui.theme.InactiveSurface
+import com.example.modern_editor.ui.theme.JetBrainsMonoFamily
 import com.example.modern_editor.ui.theme.PrimaryText
 import com.example.modern_editor.ui.theme.ScreenBackground
 import com.example.modern_editor.ui.theme.SyntaxColors
@@ -121,13 +124,6 @@ private val ACCESSORY_SYMBOLS = listOf(
     "{", "}", "(", ")", "[", "]", "<", ">",
     "=", "->", "?.", "?:", "!!", ".."
 )
-
-/**
- * The current-line highlight. InactiveSurface (#272b36) sits one step up from the
- * editor surface (#1e2430) in the locked palette, which reads as a light tint rather
- * than a hard band — no new color is introduced.
- */
-private val CurrentLineHighlight = InactiveSurface
 
 /** One *visual* (wrapped) row of the editor: its gutter label and layout geometry. */
 private data class EditorLine(
@@ -166,10 +162,12 @@ fun EditorScreen(
     val viewModel: EditorViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
     val editorError by viewModel.error.collectAsState()
 
+    val settingsRepo = context.editorApp.settingsRepository
+    val settings by settingsRepo.settings.collectAsState(EditorSettings())
     val editorState = rememberEditorState()
     val undoState = editorState.undoState
     val gutterScrollState = rememberScrollState()
-    var wordWrap by remember { mutableStateOf(true) }
+    val wordWrap = settings.wordWrap
     var showFind by remember { mutableStateOf(false) }
     var fileMenuOpen by remember { mutableStateOf(false) }
     var optionsMenuOpen by remember { mutableStateOf(false) }
@@ -198,7 +196,7 @@ fun EditorScreen(
     fun saveTo(uri: Uri) {
         scope.launch {
             val written = editorState.text.toString()
-            val ok = viewModel.save(uri, written, currentFileName, currentFileType)
+            val ok = viewModel.save(uri, written, currentFileName, currentFileType, isReadOnly)
             if (ok) {
                 savedSnapshot = written
                 RecoveryHolder.manager?.clear()
@@ -232,6 +230,7 @@ fun EditorScreen(
         currentUriString = loaded.uri.toString()
         currentFileName = loaded.name
         currentFileType = loaded.type
+        isReadOnly = loaded.readOnly
     }
 
     fun applyRecovery(record: RecoveryRecord) {
@@ -268,8 +267,17 @@ fun EditorScreen(
         VersionSession.pendingRollbackContent.value = null
     }
 
-    LaunchedEffect(Unit) {
+    var seededReadOnly by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(settings.readOnlyByDefault, initialFileUri) {
+        if (!seededReadOnly && initialFileUri == null) {
+            isReadOnly = settings.readOnlyByDefault
+            seededReadOnly = true
+        }
+    }
+
+    LaunchedEffect(settings.autoSaveIntervalMs) {
         val manager = RecoveryHolder.manager ?: return@LaunchedEffect
+        manager.intervalMs = settings.autoSaveIntervalMs
         while (true) {
             delay(manager.intervalMs)
             manager.cache(
@@ -299,10 +307,7 @@ fun EditorScreen(
 
     fun goToLine(line: Int) {
         val text = editorState.text.toString()
-        val lines = text.split("\n")
-        val targetIndex = (line - 1).coerceIn(0, lines.size - 1)
-        var offset = 0
-        for (i in 0 until targetIndex) offset += lines[i].length + 1
+        val offset = offsetForLine(text, line)
         editorState.edit { selection = TextRange(offset.coerceIn(0, length)) }
     }
 
@@ -335,7 +340,7 @@ fun EditorScreen(
         currentUriString = null
         currentFileName = name
         currentFileType = type
-        isReadOnly = false
+        isReadOnly = settings.readOnlyByDefault
     }
 
     // Back with the keyboard up should close the keyboard, not prompt — but it must not
@@ -414,7 +419,8 @@ fun EditorScreen(
     // is remembered because BasicTextField keys internal state on the instance, and it
     // carries a lex cache that we don't want thrown away on every recomposition.
     val isKotlin = currentFileType == FileType.KOTLIN
-    val syntaxHighlighter: SyntaxHighlighter? = remember(currentFileType) {
+    val syntaxHighlighter: SyntaxHighlighter? = remember(currentFileType, settings.syntaxHighlighting) {
+        if (!settings.syntaxHighlighting) return@remember null
         when (currentFileType) {
             FileType.KOTLIN -> KotlinHighlighter()
             FileType.MARKDOWN -> MarkdownHighlighter()
@@ -425,14 +431,18 @@ fun EditorScreen(
     // includeFontPadding = false keeps every line exactly lineHeight tall. With the
     // legacy font padding on, the gutter and the field disagree about where a row
     // starts and the two drift apart as lines are added.
+    val editorFontSize = settings.fontSize.sp
     val fieldTextStyle = TextStyle(
         // Unclassified code sits on Darcula's base text colour; plain-text and Markdown
         // files keep the white they had before.
-        color = if (isKotlin) SyntaxColors.CodeText else PrimaryText,
-        fontSize = 16.sp,
-        lineHeight = 20.sp,
+        color = if (isKotlin && settings.syntaxHighlighting) SyntaxColors.CodeText else PrimaryText,
+        fontSize = editorFontSize,
+        lineHeight = (settings.fontSize + 4).sp,
+        fontFamily = JetBrainsMonoFamily,
         platformStyle = PlatformTextStyle(includeFontPadding = false)
     )
+    val currentLineHighlight = InactiveSurface
+    val showCurrentLine = settings.highlightCurrentLine
     // One entry per *visual* (wrapped) row so the gutter stays aligned with wrapped
     // lines: only the first visual row of each logical line gets a number. We keep the
     // derived List<EditorLine> rather than the raw TextLayoutResult because
@@ -599,6 +609,7 @@ fun EditorScreen(
                     .weight(1f)
                     .fillMaxWidth()
             ) {
+                if (settings.lineNumbers) {
                 // The gutter deliberately has NO scroll container of its own. Each number
                 // is positioned from the field's reported line top, shifted by the field's
                 // scroll offset — the same math as the current-line highlight — so the two
@@ -612,9 +623,10 @@ fun EditorScreen(
                         .background(EditorSurface)
                         .clipToBounds()
                         .drawBehind {
+                            if (!showCurrentLine) return@drawBehind
                             currentLine?.let {
                                 drawRect(
-                                    color = CurrentLineHighlight,
+                                    color = currentLineHighlight,
                                     topLeft = Offset(0f, lineY(it, gutterScrollState.value, this)),
                                     size = Size(size.width, it.bottom - it.top)
                                 )
@@ -640,7 +652,8 @@ fun EditorScreen(
                                 Text(
                                     text = line.label,
                                     color = GutterText,
-                                    fontSize = 16.sp,
+                                    fontSize = editorFontSize,
+                                    fontFamily = JetBrainsMonoFamily,
                                     textAlign = TextAlign.End
                                 )
                             }
@@ -653,6 +666,7 @@ fun EditorScreen(
                         .fillMaxHeight()
                         .background(InactiveSurface)
                 )
+                }
                 Box(
                     Modifier
                         .weight(1f)
@@ -663,9 +677,10 @@ fun EditorScreen(
                         // Column is moved by verticalScroll) the line offsets have to be
                         // shifted by the scroll position and the field's top padding.
                         .drawBehind {
+                            if (!showCurrentLine) return@drawBehind
                             currentLine?.let {
                                 drawRect(
-                                    color = CurrentLineHighlight,
+                                    color = currentLineHighlight,
                                     topLeft = Offset(0f, lineY(it, gutterScrollState.value, this)),
                                     size = Size(size.width, it.bottom - it.top)
                                 )
@@ -745,7 +760,9 @@ fun EditorScreen(
             open = optionsMenuOpen,
             onDismiss = { optionsMenuOpen = false },
             wordWrap = wordWrap,
-            onToggleWordWrap = { wordWrap = !wordWrap },
+            onToggleWordWrap = {
+                scope.launch { settingsRepo.update { it.copy(wordWrap = !it.wordWrap) } }
+            },
             fullScreen = fullScreen,
             onToggleFullScreen = { fullScreen = !fullScreen },
             canUndo = undoState.canUndo,
@@ -753,7 +770,13 @@ fun EditorScreen(
             canRedo = undoState.canRedo,
             onRedo = { undoState.redo() },
             readOnly = isReadOnly,
-            onToggleReadOnly = { isReadOnly = !isReadOnly },
+            onToggleReadOnly = {
+                val next = !isReadOnly
+                isReadOnly = next
+                currentUriString?.let { uri ->
+                    scope.launch { viewModel.setReadOnly(Uri.parse(uri), next) }
+                }
+            },
             toolbarHidden = toolbarHidden,
             onToggleHideToolbar = { toolbarHidden = !toolbarHidden },
             onGoToLine = ::goToLine,
