@@ -51,6 +51,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -279,6 +280,13 @@ fun EditorScreen(
         if (uriString != null) {
             loadFile(Uri.parse(uriString))
         }
+    }
+
+    val rollbackContent by VersionSession.pendingRollbackContent.collectAsState()
+    LaunchedEffect(rollbackContent) {
+        val text = rollbackContent ?: return@LaunchedEffect
+        editorState.edit { replace(0, length, text) }
+        VersionSession.pendingRollbackContent.value = null
     }
 
     LaunchedEffect(Unit) {

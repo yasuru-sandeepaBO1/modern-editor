@@ -8,4 +8,6 @@ object DiffSession {
     var fileName: String = ""
     var fromVersionId: String = "from"
     var toVersionId: String = "to"
+    var rollbackFileId: String = ""
+    var rollbackVersionId: String = ""
 }
