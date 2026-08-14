@@ -29,7 +29,6 @@ fun EditorNavGraph(navController: NavHostController = rememberNavController()) {
         }
         composable(Routes.Home.route) {
             HomeScreen(
-                onOpenEditor = { navController.navigate(Routes.Editor.withFile()) },
                 onOpenFile = { uri -> navController.navigate(Routes.Editor.withFile(fileUri = uri)) },
                 onCreateFile = { name, type ->
                     navController.navigate(Routes.Editor.withFile(fileName = name, fileType = type))
@@ -63,7 +62,7 @@ fun EditorNavGraph(navController: NavHostController = rememberNavController()) {
                 initialFileName = backStackEntry.arguments?.getString(Routes.Editor.ARG_FILE_NAME),
                 initialFileType = backStackEntry.arguments?.getString(Routes.Editor.ARG_FILE_TYPE),
                 onOpenVersionHistory = { navController.navigate(Routes.VersionHistory.route) },
-                onBack = { navController.popBackStack() }
+                onOpenSettings = { navController.navigate(Routes.Settings.route) }
             )
         }
         composable(Routes.FilesList.route) {

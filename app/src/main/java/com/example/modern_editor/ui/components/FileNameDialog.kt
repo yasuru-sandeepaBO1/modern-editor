@@ -1,13 +1,19 @@
 package com.example.modern_editor.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -15,14 +21,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.modern_editor.domain.model.FileType
+import com.example.modern_editor.ui.theme.ButtonSurface
+import com.example.modern_editor.ui.theme.ButtonText
+import com.example.modern_editor.ui.theme.HeaderSurface
+import com.example.modern_editor.ui.theme.InactiveSurface
+import com.example.modern_editor.ui.theme.PrimaryText
 
 private val TYPE_OPTIONS = listOf(
-    FileType.KOTLIN to ".kt",
-    FileType.MARKDOWN to ".md",
-    FileType.PLAIN_TEXT to ".txt"
+    Triple(FileType.KOTLIN, ".kt", "Kotlin"),
+    Triple(FileType.MARKDOWN, ".md", "Markdown"),
+    Triple(FileType.PLAIN_TEXT, ".txt", "Text")
 )
 
 /**
@@ -44,6 +59,9 @@ fun FileNameDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = HeaderSurface,
+        titleContentColor = PrimaryText,
+        textContentColor = PrimaryText,
         title = { Text(title) },
         text = {
             Column {
@@ -52,24 +70,43 @@ fun FileNameDialog(
                     onValueChange = { name = it },
                     placeholder = { Text("filename") },
                     singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = ButtonSurface,
+                        unfocusedBorderColor = InactiveSurface,
+                        focusedTextColor = PrimaryText,
+                        unfocusedTextColor = PrimaryText,
+                        focusedPlaceholderColor = ButtonText,
+                        unfocusedPlaceholderColor = ButtonText,
+                        cursorColor = PrimaryText
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (showTypeSelector) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        TYPE_OPTIONS.forEach { (type, extension) ->
-                            TextButton(
-                                onClick = { selectedType = type },
-                                colors = ButtonDefaults.textButtonColors(
-                                    contentColor = if (selectedType == type) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
+                        TYPE_OPTIONS.forEach { (type, extension, label) ->
+                            val selected = selectedType == type
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (selected) ButtonSurface else Color.Transparent)
+                                    .border(1.dp, InactiveSurface, RoundedCornerShape(8.dp))
+                                    .clickable { selectedType = type }
+                                    .padding(vertical = 10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(text = extension, color = if (selected) PrimaryText else ButtonText)
+                                Text(
+                                    text = label,
+                                    color = if (selected) PrimaryText else ButtonText,
+                                    fontSize = 10.sp
                                 )
-                            ) { Text(extension) }
+                            }
                         }
                     }
                 }
@@ -78,11 +115,18 @@ fun FileNameDialog(
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(name.trim(), if (showTypeSelector) selectedType else null) },
-                enabled = name.isNotBlank()
+                enabled = name.isNotBlank(),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = PrimaryText,
+                    disabledContentColor = ButtonText
+                )
             ) { Text(confirmLabel) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(contentColor = ButtonText)
+            ) { Text("Cancel") }
         }
     )
 }

@@ -28,3 +28,14 @@ data class EditorFile(
     val createdAt: Long,
     val modifiedAt: Long
 )
+
+fun relativeTimeLabel(millis: Long, now: Long = System.currentTimeMillis()): String {
+    val diffSeconds = (now - millis) / 1000
+    return when {
+        diffSeconds < 60 -> "just now"
+        diffSeconds < 3600 -> "${diffSeconds / 60}m ago"
+        diffSeconds < 86400 -> "${diffSeconds / 3600}h ago"
+        diffSeconds < 604800 -> "${diffSeconds / 86400}d ago"
+        else -> "${diffSeconds / 604800}w ago"
+    }
+}
