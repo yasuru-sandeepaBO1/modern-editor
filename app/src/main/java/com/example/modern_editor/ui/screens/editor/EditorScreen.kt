@@ -10,10 +10,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,12 +30,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
@@ -46,15 +57,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -81,6 +100,34 @@ import kotlinx.coroutines.launch
 private val ACCESSORY_KEYWORDS = listOf("val", "var", "fun", "if", "else", "for", "while", "return", "class")
 private val ACCESSORY_SYMBOLS = listOf("{", "}", "(", ")", ";", ":", "->", "\"")
 
+/**
+ * The current-line highlight. InactiveSurface (#272b36) sits one step up from the
+ * editor surface (#1e2430) in the locked palette, which reads as a light tint rather
+ * than a hard band — no new color is introduced.
+ */
+private val CurrentLineHighlight = InactiveSurface
+
+/** One *visual* (wrapped) row of the editor: its gutter label and layout geometry. */
+private data class EditorLine(
+    val label: String,
+    val startOffset: Int,
+    val top: Float,
+    val bottom: Float
+)
+
+/** Vertical padding above the first line — must match on the gutter and the field. */
+private val EDITOR_VERTICAL_PADDING = 8.dp
+private val GUTTER_NUMBER_WIDTH = 32.dp
+private val GUTTER_WIDTH = 48.dp
+
+/**
+ * Y position of a line inside a viewport that shows the field's scrolled content.
+ * Both the gutter and the code area resolve row positions through this one function so
+ * they cannot drift apart.
+ */
+private fun lineY(line: EditorLine, scroll: Int, density: Density): Float =
+    line.top - scroll + with(density) { EDITOR_VERTICAL_PADDING.toPx() }
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditorScreen(
@@ -88,7 +135,8 @@ fun EditorScreen(
     initialFileName: String?,
     initialFileType: String?,
     onOpenVersionHistory: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -266,34 +314,49 @@ fun EditorScreen(
         )
     }
 
+    // includeFontPadding = false keeps every line exactly lineHeight tall. With the
+    // legacy font padding on, the gutter and the field disagree about where a row
+    // starts and the two drift apart as lines are added.
     val fieldTextStyle = TextStyle(
         color = PrimaryText,
         fontSize = 16.sp,
-        lineHeight = 20.sp
+        lineHeight = 20.sp,
+        platformStyle = PlatformTextStyle(includeFontPadding = false)
     )
-    // One label per *visual* (wrapped) row so the gutter stays aligned with wrapped
-    // lines: only the first visual row of each logical line gets a number. Stored as
-    // the final List<String> (not the raw TextLayoutResult) so Compose's structural
-    // equality check on mutableStateOf can actually skip redundant recomposition when
-    // a layout pass produces an identical result — TextLayoutResult itself doesn't
-    // implement equals(), so storing it directly caused every layout pass to look like
-    // a change and could spiral into runaway recomposition.
-    var gutterRowLabels by remember { mutableStateOf(listOf("1")) }
+    // One entry per *visual* (wrapped) row so the gutter stays aligned with wrapped
+    // lines: only the first visual row of each logical line gets a number. We keep the
+    // derived List<EditorLine> rather than the raw TextLayoutResult because
+    // TextLayoutResult has no equals(), so storing it in mutableStateOf made every
+    // layout pass look like a change and could spiral into runaway recomposition.
+    // The top/bottom offsets also drive the current-line highlight.
+    var editorLines by remember { mutableStateOf(listOf(EditorLine("1", 0, 0f, 0f))) }
     val onFieldTextLayout: (androidx.compose.ui.unit.Density.(() -> TextLayoutResult?) -> Unit) =
         { getResult ->
             val layout = getResult()
             val currentText = editorState.text
-            gutterRowLabels = if (layout == null) {
-                listOf("1")
+            editorLines = if (layout == null) {
+                listOf(EditorLine("1", 0, 0f, 0f))
             } else {
                 var logicalLine = 1
                 (0 until layout.lineCount).map { visualLine ->
                     val start = layout.getLineStart(visualLine)
                     val isLineStart = visualLine == 0 || currentText.getOrNull(start - 1) == '\n'
-                    if (isLineStart) (logicalLine++).toString() else ""
+                    EditorLine(
+                        label = if (isLineStart) (logicalLine++).toString() else "",
+                        startOffset = start,
+                        top = layout.getLineTop(visualLine),
+                        bottom = layout.getLineBottom(visualLine)
+                    )
                 }
             }
         }
+
+    // Which visual row the caret sits on — drives the current-line highlight. Reading
+    // editorState.selection here is what makes the highlight follow a moving cursor
+    // even when the text (and therefore the layout) hasn't changed.
+    val caretOffset = editorState.selection.start
+    val currentLine = editorLines.lastOrNull { caretOffset >= it.startOffset } ?: editorLines.firstOrNull()
+    val density = LocalDensity.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -303,29 +366,72 @@ fun EditorScreen(
                 .statusBarsPadding()
                 .imePadding()
         ) {
+            // Two-row header, per UIs/editor.html: the hamburger and the file tab sit on
+            // the first row, the back arrow / context label / actions on the second.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(HeaderSurface)
-                    .padding(horizontal = 4.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(start = 4.dp, end = 8.dp, top = 4.dp),
+                verticalAlignment = Alignment.Bottom
             ) {
                 IconButton(onClick = { fileMenuOpen = true }) {
                     Icon(Icons.Filled.Menu, contentDescription = "File menu", tint = PrimaryText)
                 }
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                        .background(EditorSurface)
+                        .padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Filled.Description,
+                        contentDescription = null,
+                        tint = ButtonText,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = currentFileName,
+                        color = PrimaryText,
+                        fontSize = 14.sp,
+                        maxLines = 1
+                    )
+                    // Closing the only open tab leaves the editor, which is the same
+                    // destination as the back arrow.
+                    IconButton(onClick = onBack, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "Close file",
+                            tint = ButtonText,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(HeaderSurface)
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = PrimaryText
+                    )
+                }
                 Text(
-                    text = currentFileName,
-                    color = PrimaryText,
-                    fontSize = 14.sp,
+                    text = if (currentUriString == null) "New file" else "Saved file",
+                    color = ButtonText,
+                    fontSize = 13.sp,
                     maxLines = 1,
                     modifier = Modifier.weight(1f)
                 )
-                IconButton(onClick = { showFind = !showFind }) {
-                    Icon(Icons.Filled.Search, contentDescription = "Search", tint = PrimaryText)
-                }
-                IconButton(onClick = { doSave() }) {
-                    Icon(Icons.Filled.Save, contentDescription = "Save", tint = PrimaryText)
-                }
                 IconButton(onClick = { undoState.undo() }, enabled = undoState.canUndo) {
                     Icon(
                         Icons.AutoMirrored.Filled.Undo,
@@ -340,6 +446,12 @@ fun EditorScreen(
                         tint = if (undoState.canRedo) PrimaryText else GutterText
                     )
                 }
+                IconButton(onClick = { showFind = !showFind }) {
+                    Icon(Icons.Filled.Search, contentDescription = "Search", tint = PrimaryText)
+                }
+                IconButton(onClick = { doSave() }) {
+                    Icon(Icons.Filled.Save, contentDescription = "Save", tint = PrimaryText)
+                }
                 IconButton(onClick = { optionsMenuOpen = true }) {
                     Icon(Icons.Filled.MoreVert, contentDescription = "Options", tint = PrimaryText)
                 }
@@ -350,21 +462,52 @@ fun EditorScreen(
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                Column(
+                // The gutter deliberately has NO scroll container of its own. Each number
+                // is positioned from the field's reported line top, shifted by the field's
+                // scroll offset — the same math as the current-line highlight — so the two
+                // stay in lockstep at any scroll position. Giving the gutter its own
+                // verticalScroll made it clamp at a different maximum than the field, so
+                // the numbers slid out of step once the buffer was long enough to scroll.
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .verticalScroll(gutterScrollState)
+                        .width(GUTTER_WIDTH)
                         .background(EditorSurface)
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                        .clipToBounds()
+                        .drawBehind {
+                            currentLine?.let {
+                                drawRect(
+                                    color = CurrentLineHighlight,
+                                    topLeft = Offset(0f, lineY(it, gutterScrollState.value, this)),
+                                    size = Size(size.width, it.bottom - it.top)
+                                )
+                            }
+                        }
                 ) {
-                    for (label in gutterRowLabels) {
-                        Text(
-                            text = label,
-                            color = GutterText,
-                            style = fieldTextStyle,
-                            textAlign = TextAlign.End,
-                            modifier = Modifier.width(32.dp)
-                        )
+                    val viewportPx = with(density) { maxHeight.toPx() }
+                    val scroll = gutterScrollState.value
+                    val padTopPx = with(density) { EDITOR_VERTICAL_PADDING.toPx() }
+                    val labelInsetPx = with(density) { 8.dp.roundToPx() }
+                    editorLines.forEach { line ->
+                        val y = line.top - scroll + padTopPx
+                        // Only compose rows actually on screen, so a long file doesn't
+                        // create a composable per line.
+                        if (line.label.isNotEmpty() && y > -viewportPx && y < viewportPx * 2) {
+                            Box(
+                                modifier = Modifier
+                                    .offset { IntOffset(labelInsetPx, y.roundToInt()) }
+                                    .width(GUTTER_NUMBER_WIDTH)
+                                    .height(with(density) { (line.bottom - line.top).toDp() }),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Text(
+                                    text = line.label,
+                                    color = GutterText,
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.End
+                                )
+                            }
+                        }
                     }
                 }
                 Box(
@@ -378,6 +521,18 @@ fun EditorScreen(
                         .weight(1f)
                         .fillMaxHeight()
                         .background(EditorSurface)
+                        // The field scrolls its own content, so unlike the gutter (whose
+                        // Column is moved by verticalScroll) the line offsets have to be
+                        // shifted by the scroll position and the field's top padding.
+                        .drawBehind {
+                            currentLine?.let {
+                                drawRect(
+                                    color = CurrentLineHighlight,
+                                    topLeft = Offset(0f, lineY(it, gutterScrollState.value, this)),
+                                    size = Size(size.width, it.bottom - it.top)
+                                )
+                            }
+                        }
                 ) {
                     if (wordWrap) {
                         BasicTextField(
@@ -385,7 +540,7 @@ fun EditorScreen(
                             scrollState = gutterScrollState,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                .padding(horizontal = 16.dp, vertical = EDITOR_VERTICAL_PADDING),
                             lineLimits = TextFieldLineLimits.MultiLine(),
                             textStyle = fieldTextStyle,
                             cursorBrush = SolidColor(PrimaryText),
@@ -401,7 +556,7 @@ fun EditorScreen(
                             BasicTextField(
                                 state = editorState,
                                 scrollState = gutterScrollState,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = EDITOR_VERTICAL_PADDING),
                                 lineLimits = TextFieldLineLimits.MultiLine(),
                                 textStyle = fieldTextStyle,
                                 cursorBrush = SolidColor(PrimaryText),
@@ -470,29 +625,33 @@ fun EditorScreen(
     }
 }
 
+/**
+ * The token rows wrap instead of scrolling horizontally. The reference markup scrolls,
+ * but at this screen width the keyword row overflows and the last token gets sliced
+ * mid-glyph, which reads as broken and hides keys behind a scroll gesture. Wrapping
+ * keeps every token fully drawn and one tap away at any width.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AccessoryToolbar(onInsert: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(HeaderSurface)
-            .padding(vertical = 4.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             ACCESSORY_KEYWORDS.forEach { token -> AccessoryButton(token) { onInsert(token) } }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             ACCESSORY_SYMBOLS.forEach { token -> AccessoryButton(token) { onInsert(token) } }
         }
@@ -506,10 +665,10 @@ private fun AccessoryButton(label: String, onClick: () -> Unit) {
             .clip(RoundedCornerShape(6.dp))
             .background(ButtonSurface)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = label, color = ButtonText, fontSize = 13.sp)
+        Text(text = label, color = ButtonText, fontSize = 12.sp)
     }
 }
 
