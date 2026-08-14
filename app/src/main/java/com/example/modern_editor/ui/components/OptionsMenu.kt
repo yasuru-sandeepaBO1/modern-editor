@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.automirrored.filled.WrapText
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.History
@@ -86,7 +87,9 @@ fun OptionsMenu(
     onShare: () -> Unit,
     onRename: () -> Unit,
     onVersionHistory: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    showMarkdownPreview: Boolean = false,
+    onMarkdownPreview: () -> Unit = {}
 ) {
     var lineInput by remember { mutableStateOf("") }
 
@@ -189,6 +192,9 @@ fun OptionsMenu(
                 HorizontalDivider(color = InactiveSurface, modifier = Modifier.padding(vertical = 8.dp))
 
                 MenuRow(icon = Icons.Filled.Share, label = "Share") { onDismiss(); onShare() }
+                if (showMarkdownPreview) {
+                    MenuRow(icon = Icons.Filled.Description, label = "Preview") { onDismiss(); onMarkdownPreview() }
+                }
                 MenuRow(icon = Icons.Filled.DriveFileRenameOutline, label = "Rename") { onDismiss(); onRename() }
                 MenuRow(icon = Icons.Filled.History, label = "Version History") { onDismiss(); onVersionHistory() }
                 MenuRow(icon = Icons.Filled.Settings, label = "Settings") { onDismiss(); onSettings() }
