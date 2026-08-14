@@ -547,3 +547,333 @@ Now buildable, since Database (Component 8) and Diff Engine (Component 9) both a
 
 **Tasks in component**
 - Patch model
+- Delta generation
+- Compare previous/current versions
+- Store only changes where appropriate
+- Reconstruct later versions
+- Connect to VersionManager
+
+**Test cases**
+
+**TC10.1 — Initial version**
+Create first version.
+Expected: initial snapshot is stored correctly.
+
+**TC10.2 — Small change**
+Change one line. Create second version.
+Expected: delta represents that change.
+
+**TC10.3 — Multiple changes**
+Change several lines. Create version.
+Expected: all changes are represented.
+
+**TC10.4 — Reconstruction**
+Create V1 → V2 → V3. Reconstruct V2.
+Expected: exact V2 contents return.
+
+**TC10.5 — No unnecessary duplication**
+Create versions with small changes. Verify persistence behavior.
+Expected: later versions use delta/patch information rather than blindly duplicating the entire file.
+
+**TC10.6 — Chain reconstruction**
+Create 5+ versions. Reconstruct the oldest, middle and newest versions.
+Expected: all contents are correct.
+
+---
+
+## COMPONENT 11 — VERSION CONTROL FOUNDATION *(reordered — was Component 8)*
+
+Important: Do NOT confuse this with Undo/Redo. Undo/Redo is session history; version control is persistent document history.
+
+**Tasks in component**
+- Version model
+- VersionManager
+- SnapshotManager
+- Snapshot creation
+- Version metadata
+- Version numbering/naming
+- Connect version lifecycle to the editor
+
+**Test cases**
+
+**TC11.1 — Create version**
+Open file. Make a meaningful change. Create version.
+Expected: version is recorded.
+
+**TC11.2 — Multiple versions**
+Create Version 1. Modify. Create Version 2. Modify. Create Version 3.
+Expected: all three are distinguishable.
+
+**TC11.3 — Version metadata**
+Inspect history.
+Expected: correct version information is shown.
+
+**TC11.4 — Undo independence**
+Make an edit. Undo. Check version history.
+Expected: Undo does not behave as persistent version deletion.
+
+**TC11.5 — Persistence**
+Close/reopen app.
+Expected: saved version history remains.
+
+**TC11.6 — Snapshot vs. delta labeling** *(new)*
+Create several versions of a file, including across separate app sessions.
+Expected: only the very first version ever created for that file is labeled SNAPSHOT; every version after it, no matter how much later, is labeled DELTA. A file can only ever have exactly one SNAPSHOT.
+
+---
+
+## COMPONENT 12 — HISTORY & ROLLBACK
+
+The intended flow is version selection → reconstruction from patches → editor buffer. **(finalized)** Rollback requires an explicit confirmation step before it executes.
+
+**Tasks in component**
+- History screen
+- Version list
+- Version selection
+- Version reconstruction
+- Diff screen integration
+- Restore
+- RollbackManager
+- Rollback confirmation dialog — "Roll back to vX? Any unsaved changes in the current file will be lost." with Cancel / Roll Back buttons; triggered from the Diff Comparison screen's Rollback button
+
+**Test cases**
+
+**TC12.1 — History**
+Create 3 versions. Open History.
+Expected: all versions appear.
+
+**TC12.2 — Select version**
+Tap Version 2.
+Expected: Version 2 details/content are shown.
+
+**TC12.3 — View diff**
+Select two versions. Open diff.
+Expected: correct differences appear.
+
+**TC12.4 — Restore old version**
+Select Version 1. Restore, confirming the dialog.
+Expected: editor contains exact Version 1 content.
+
+**TC12.5 — Restore middle version**
+Restore Version 2 from V1 → V2 → V3.
+Expected: exact V2 content returns.
+
+**TC12.6 — Restore latest**
+Restore latest version.
+Expected: current content matches latest version.
+
+**TC12.7 — Post-rollback behavior**
+Restore old version. Make a new edit.
+Expected: editing works normally afterward.
+
+**TC12.8 — Persistence**
+Roll back. Close/reopen.
+Expected: resulting state/history remains consistent.
+
+**TC12.9 — Rollback confirmation** *(new)*
+Tap "Rollback to vX" on the Diff Comparison screen.
+Expected: a confirmation dialog appears before anything changes. Tapping Cancel leaves the editor untouched; tapping Roll Back performs the restore as in TC12.4–12.6.
+
+---
+
+## COMPONENT 13 — REPOSITORY LAYER
+
+Architecture: UI → ViewModel → Repository → Storage.
+
+Note: because this layer was required by Component 0's architecture, Components 3 and 8–12 have already been exercising it indirectly. Treat these as confirmation/regression tests, not first-time tests.
+
+**Tasks in component**
+- FileRepository
+- VersionRepository
+- SettingsRepository
+- Connect ViewModels/business logic to repositories
+- Hide storage implementation from UI
+
+**Test cases**
+
+**TC13.1 — File operation**
+Create/save/open through UI.
+Expected: works without UI directly depending on storage implementation.
+
+**TC13.2 — Version operation**
+Create/view versions.
+Expected: history works through VersionRepository.
+
+**TC13.3 — Restart**
+Restart app.
+Expected: repository retrieves persisted data correctly.
+
+**TC13.4 — Error handling**
+Attempt invalid/missing file operation.
+Expected: user gets a controlled error instead of app crash.
+
+---
+
+## COMPONENT 14 — SETTINGS
+*(sections and controls finalized)*
+
+Reached from two places: Home's App Drawer, and Editor's Options Menu — both open the same screen.
+
+**Tasks in component**
+- Settings screen
+- Settings model
+- SettingsRepository
+- DataStore persistence
+- Section: Editor Preferences — Font Size (interactive slider, live value display), Tab Size (dropdown), Word Wrap (toggle), Line Numbers (toggle), Highlight Current Line (toggle)
+- Section: Appearance — App Theme (segmented control: Dark / Light / System), Syntax Highlighting (simple on/off toggle, not a multi-theme picker)
+- Section: System & Recovery — Auto-save Interval (dropdown: 5s/10s/30s/1m — feeds Component 7's caching interval), Read-only by Default (toggle — sets the default for newly created files, ties to Component 3)
+
+**Test cases**
+
+**TC14.1 — Font size**
+Drag the Font Size slider. Return to editor.
+Expected: font size changes live, matching the slider's value.
+
+**TC14.2 — Persistence**
+Change font size. Close/reopen app.
+Expected: setting remains.
+
+**TC14.3 — Word wrap**
+Toggle word wrap.
+Expected: editor behavior changes.
+
+**TC14.4 — Line numbers**
+Toggle line numbers.
+Expected: line numbers appear/disappear.
+
+**TC14.5 — Theme**
+Change theme.
+Expected: UI/editor changes correctly.
+
+**TC14.6 — Syntax highlighting**
+Disable/enable highlighting.
+Expected: highlighting responds accordingly.
+
+**TC14.7 — Multiple settings**
+Change several settings. Restart app.
+Expected: all settings persist.
+
+---
+
+## COMPONENT 15 — OPTIONAL / SMART FEATURES
+
+Only after all required functionality is stable.
+
+**Tasks in component**
+- Auto indentation
+- Bracket matching
+- Auto-closing brackets
+- Go to line
+- Current-line highlighting
+- Code folding
+- Advanced Kotlin highlighting
+- Kotlin formatting
+- Markdown preview
+- Themes
+- Custom fonts
+- Better dialogs
+- Better empty states
+- File statistics — not present in the current Options Menu design; kept here as deferred/optional
+- Full Screen mode — hides system chrome for a distraction-free view *(new)*
+- Hide Toolbar — hides the accessory toolbar *(new)*
+- Share — native Android share sheet for the current file's content *(new)*
+
+**Test cases**
+
+For each optional feature:
+
+**TC15.X.1 — Normal operation**
+Use feature normally.
+Expected: correct result.
+
+**TC15.X.2 — Boundary case**
+Use feature with empty/minimal input.
+Expected: no crash.
+
+**TC15.X.3 — Interaction**
+Use feature while editing/saving/searching.
+Expected: doesn't break existing functionality.
+
+**TC15.X.4 — Persistence**
+If the feature has a setting, restart app.
+Expected: setting remains.
+
+**TC15.X.5 — Regression**
+Test basic typing, save, open, undo/redo after adding feature.
+Expected: existing functionality still works.
+
+---
+
+## COMPONENT 16 — FINAL TESTING & POLISH
+
+This becomes our full regression test.
+
+**Tasks in component**
+- Editor testing
+- File testing
+- Syntax testing
+- Recovery testing
+- Version testing
+- Diff testing
+- Rollback testing
+- Database testing
+- UI testing — verify final build matches the finalized Stitch screens exactly (colors, menu contents, dialog behavior)
+- Error handling
+- Performance
+- Large files
+- Corrupted recovery data
+- App restart
+- Storage failures
+- Version reconstruction
+- UI polish
+- APK build
+
+**Test cases**
+
+**TC16.1 — Fresh installation**
+Install fresh APK. Launch.
+Expected: app works.
+
+**TC16.2 — Complete editor workflow**
+New → type → edit → undo → redo → save.
+Expected: everything works.
+
+**TC16.3 — File workflow**
+Save → close → reopen → modify → Save As.
+Expected: correct files/content.
+
+**TC16.4 — Syntax workflow**
+Open .kt. Edit.
+Expected: highlighting remains correct.
+
+**TC16.5 — Markdown workflow**
+Open .md. Edit.
+Expected: Markdown highlighting works.
+
+**TC16.6 — Recovery workflow**
+Type → interrupt app → reopen → recover.
+Expected: recovery works.
+
+**TC16.7 — Version workflow**
+Create multiple versions.
+Expected: history persists.
+
+**TC16.8 — Diff workflow**
+Compare versions.
+Expected: correct changes.
+
+**TC16.9 — Rollback workflow**
+Restore an old version, confirming the dialog.
+Expected: exact content restored.
+
+**TC16.10 — Settings workflow**
+Change settings → restart.
+Expected: settings persist.
+
+**TC16.11 — Large file**
+Open a reasonably large text/code file.
+Expected: no crash and acceptable responsiveness.
+
+**TC16.12 — Full regression**
+Run the major workflows again after all optional features.
+Expected: no previously working feature is broken.
