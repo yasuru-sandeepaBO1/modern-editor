@@ -32,4 +32,14 @@ object SyntaxColors {
 
     /** Base colour for code that isn't otherwise classified (identifiers, operators). */
     val CodeText = Color(0xFFA9B7C6)
+
+    // --- Markdown ---
+    // Structural Markdown tokens; emphasis (bold/italic) is expressed with font weight
+    // and style rather than colour, so it needs no entry here.
+
+    /** Markdown heading lines (`# Title`), rendered bold. */
+    val MarkdownHeading = Color(0xFF6897BB)
+
+    /** Markdown link text `[label]`. Reuses the classic Darcula link blue. */
+    val MarkdownLink = Color(0xFF287BDE)
 }

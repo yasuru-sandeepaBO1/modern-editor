@@ -7,19 +7,21 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -61,7 +63,7 @@ import com.example.modern_editor.ui.theme.HeaderSurface
 import com.example.modern_editor.ui.theme.InactiveSurface
 import com.example.modern_editor.ui.theme.PrimaryText
 
-/** Slides in from the RIGHT edge — opened by the Editor's overflow (three-dot) icon. */
+/** Compact popup anchored top-right, opened by the Editor's overflow (three-dot) icon. */
 @Composable
 fun OptionsMenu(
     open: Boolean,
@@ -101,19 +103,25 @@ fun OptionsMenu(
             )
         }
 
+        // A popup anchored under the overflow icon rather than a full-height drawer: it
+        // takes only the width it needs and only as much height as its content, so the
+        // document stays visible behind it.
         AnimatedVisibility(
             visible = open,
-            enter = slideInHorizontally(initialOffsetX = { it }),
-            exit = slideOutHorizontally(targetOffsetX = { it })
+            enter = fadeIn() + slideInHorizontally(initialOffsetX = { it / 6 }),
+            exit = fadeOut() + slideOutHorizontally(targetOffsetX = { it / 6 })
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .width(280.dp)
-                    .background(HeaderSurface)
                     .statusBarsPadding()
+                    .padding(top = 4.dp, end = 8.dp, bottom = 8.dp)
+                    .width(250.dp)
+                    .shadow(12.dp, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(HeaderSurface)
+                    // Wraps its content, but can still scroll on a short screen.
                     .verticalScroll(rememberScrollState())
-                    .padding(top = 8.dp, bottom = 24.dp)
+                    .padding(vertical = 8.dp)
             ) {
                 ToggleMenuRow(Icons.AutoMirrored.Filled.WrapText, "Word Wrap", wordWrap, onToggleWordWrap)
                 ToggleMenuRow(Icons.Filled.Fullscreen, "Full Screen", fullScreen, onToggleFullScreen)

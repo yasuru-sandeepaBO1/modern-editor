@@ -3,13 +3,17 @@ package com.example.modern_editor.ui.screens.editor
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +67,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextLayoutResult
@@ -84,10 +89,13 @@ import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.extension
 import com.example.modern_editor.domain.model.fileTypeFromFileName
 import com.example.modern_editor.editor.highlight.KotlinHighlighter
+import com.example.modern_editor.editor.highlight.MarkdownHighlighter
+import com.example.modern_editor.editor.highlight.SyntaxHighlighter
 import com.example.modern_editor.editor.rememberEditorState
 import com.example.modern_editor.ui.components.FileMenu
 import com.example.modern_editor.ui.components.FileNameDialog
 import com.example.modern_editor.ui.components.OptionsMenu
+import com.example.modern_editor.ui.components.UnsavedChangesDialog
 import com.example.modern_editor.ui.theme.ButtonSurface
 import com.example.modern_editor.ui.theme.ButtonText
 import com.example.modern_editor.ui.theme.EditorSurface
@@ -138,7 +146,7 @@ private val GUTTER_WIDTH = 48.dp
 private fun lineY(line: EditorLine, scroll: Int, density: Density): Float =
     line.top - scroll + with(density) { EDITOR_VERTICAL_PADDING.toPx() }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun EditorScreen(
     initialFileUri: String?,
@@ -172,6 +180,14 @@ fun EditorScreen(
     var showRenameDialog by remember { mutableStateOf(false) }
     var showNewFileDialog by remember { mutableStateOf(false) }
 
+    // The text as it last existed on disk. Comparing against it is what tells us whether
+    // leaving would lose work; a plain "edited" flag would stay set even after the user
+    // undid their way back to the saved content.
+    var savedSnapshot by rememberSaveable { mutableStateOf("") }
+    var showUnsavedDialog by remember { mutableStateOf(false) }
+    // Set when a save was started specifically so we could leave afterwards.
+    var leaveAfterSave by remember { mutableStateOf(false) }
+
     fun upsertRecent(uri: Uri, name: String, type: FileType) {
         scope.launch {
             val now = System.currentTimeMillis()
@@ -192,8 +208,14 @@ fun EditorScreen(
 
     fun saveTo(uri: Uri) {
         scope.launch {
-            FileStorage.writeText(context, uri, editorState.text.toString())
+            val written = editorState.text.toString()
+            FileStorage.writeText(context, uri, written)
+            savedSnapshot = written
             upsertRecent(uri, currentFileName, currentFileType)
+            if (leaveAfterSave) {
+                leaveAfterSave = false
+                onBack()
+            }
         }
     }
 
@@ -219,6 +241,7 @@ fun EditorScreen(
         val content = FileStorage.readText(context, uri)
         editorState.edit { replace(0, length, content) }
         undoState.clearHistory()
+        savedSnapshot = content
         val displayName = FileStorage.displayNameOf(context, uri) ?: (uri.lastPathSegment ?: "untitled.txt")
         currentUriString = uri.toString()
         currentFileName = displayName
@@ -273,13 +296,50 @@ fun EditorScreen(
         }
     }
 
+    // Leaving is routed through here so the arrow, the tab's close button and the system
+    // back gesture all get the same guard.
+    val isDirty = editorState.text.toString() != savedSnapshot
+    fun attemptBack() {
+        if (isDirty) showUnsavedDialog = true else onBack()
+    }
+
     fun startNewFile(name: String, type: FileType) {
         editorState.edit { replace(0, length, "") }
         undoState.clearHistory()
+        savedSnapshot = ""
         currentUriString = null
         currentFileName = name
         currentFileType = type
         isReadOnly = false
+    }
+
+    // Back with the keyboard up should close the keyboard, not prompt — but it must not
+    // fall through to the navigator either, or unsaved work disappears silently. So the
+    // handler stays enabled and hides the keyboard itself; a second back then prompts.
+    // Overlays register their handlers later in the composition, so an open menu still
+    // consumes back before this.
+    val imeVisible = WindowInsets.isImeVisible
+    val keyboardController = LocalSoftwareKeyboardController.current
+    BackHandler(enabled = isDirty || imeVisible) {
+        if (imeVisible) keyboardController?.hide() else attemptBack()
+    }
+
+    if (showUnsavedDialog) {
+        UnsavedChangesDialog(
+            fileName = currentFileName,
+            onSave = {
+                showUnsavedDialog = false
+                // A file that has never been saved needs a destination first; saveTo()
+                // leaves once the picker comes back.
+                leaveAfterSave = true
+                doSave()
+            },
+            onDiscard = {
+                showUnsavedDialog = false
+                onBack()
+            },
+            onCancel = { showUnsavedDialog = false }
+        )
     }
 
     if (showNewFileDialog) {
@@ -328,7 +388,13 @@ fun EditorScreen(
     // is remembered because BasicTextField keys internal state on the instance, and it
     // carries a lex cache that we don't want thrown away on every recomposition.
     val isKotlin = currentFileType == FileType.KOTLIN
-    val syntaxHighlighter = remember(isKotlin) { if (isKotlin) KotlinHighlighter() else null }
+    val syntaxHighlighter: SyntaxHighlighter? = remember(currentFileType) {
+        when (currentFileType) {
+            FileType.KOTLIN -> KotlinHighlighter()
+            FileType.MARKDOWN -> MarkdownHighlighter()
+            FileType.PLAIN_TEXT -> null
+        }
+    }
 
     // includeFontPadding = false keeps every line exactly lineHeight tall. With the
     // legacy font padding on, the gutter and the field disagree about where a row
@@ -433,7 +499,7 @@ fun EditorScreen(
                     )
                     // Closing the only open tab leaves the editor, which is the same
                     // destination as the back arrow.
-                    IconButton(onClick = onBack, modifier = Modifier.size(32.dp)) {
+                    IconButton(onClick = ::attemptBack, modifier = Modifier.size(32.dp)) {
                         Icon(
                             Icons.Filled.Close,
                             contentDescription = "Close file",
@@ -451,7 +517,7 @@ fun EditorScreen(
                     .padding(horizontal = 4.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onBack) {
+                IconButton(onClick = ::attemptBack) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",

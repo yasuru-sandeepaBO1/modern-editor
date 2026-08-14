@@ -56,4 +56,26 @@ looks like in Android Studio itself.
 Implemented in `ui/theme/SyntaxColors.kt`. Applied only to files recognised as Kotlin;
 plain-text files keep `#FFFFFF` body text.
 
+### Markdown (Component 6)
+
+Markdown files (`.md`) are highlighted with the same scoping rule — colours live only in
+the code area. Emphasis is expressed with **font weight/style**, not colour (`**bold**`
+renders bold, `*italic*` renders italic), so those two need no hue. Markdown body text
+stays `#FFFFFF` so prose reads normally; only the structural tokens are tinted, most of
+them reusing the Darcula colours above.
+
+| Token | Hex / style |
+|---|---|
+| Heading line (`# Title`) | `#6897BB`, bold |
+| Bold `**text**` | font weight bold (no colour) |
+| Italic `*text*` | italic (no colour) |
+| Inline code / fenced code block | `#6A8759` (reused) |
+| List marker (`-`, `1.`) | `#CC7832` (reused), bold |
+| Blockquote marker (`>`) | `#808080` (reused), italic |
+| Link text `[label]` | `#287BDE` |
+| Link URL `(url)` | `#808080` (reused) |
+
+Two new hues — `#6897BB` heading (shared with numeric literals) and `#287BDE` link — are
+added in `SyntaxColors.kt`; everything else reuses existing Darcula tokens.
+
 
