@@ -18,6 +18,6 @@ class GoToLineTest {
         assertEquals(0, offsetForLine("", 1))
         assertEquals(0, offsetForLine("", 99))
         assertEquals(0, offsetForLine("abc", 0))
-        assertEquals(4, offsetForLine("ab\ncd", 99))
+        assertEquals(3, offsetForLine("ab\ncd", 99))
     }
 }
