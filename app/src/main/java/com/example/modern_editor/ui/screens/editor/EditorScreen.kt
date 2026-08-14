@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -92,8 +93,11 @@ import com.example.modern_editor.domain.model.fileTypeFromFileName
 import com.example.modern_editor.editor.highlight.KotlinHighlighter
 import com.example.modern_editor.editor.highlight.MarkdownHighlighter
 import com.example.modern_editor.editor.highlight.SyntaxHighlighter
+import com.example.modern_editor.editor.autoCloseAfter
+import com.example.modern_editor.editor.matchingBracket
 import com.example.modern_editor.editor.offsetForLine
 import com.example.modern_editor.editor.rememberEditorState
+import com.example.modern_editor.editor.SmartEditorInput
 import com.example.modern_editor.recovery.RecoveryHolder
 import com.example.modern_editor.recovery.RecoveryRecord
 import com.example.modern_editor.ui.AppViewModelFactory
@@ -173,6 +177,7 @@ fun EditorScreen(
     var optionsMenuOpen by remember { mutableStateOf(false) }
     var fullScreen by remember { mutableStateOf(false) }
     var toolbarHidden by remember { mutableStateOf(false) }
+    var showMarkdownPreview by remember { mutableStateOf(false) }
 
     var currentUriString by rememberSaveable { mutableStateOf(initialFileUri) }
     var currentFileName by rememberSaveable { mutableStateOf(initialFileName ?: "untitled.txt") }
@@ -322,7 +327,15 @@ fun EditorScreen(
     fun insertToken(token: String) {
         editorState.edit {
             val sel = selection
-            replace(sel.min, sel.max, token)
+            val selected = asCharSequence().substring(sel.min, sel.max)
+            val next = asCharSequence().getOrNull(sel.max)
+            val extra = autoCloseAfter(token, selected, next)
+            if (extra != null) {
+                replace(sel.min, sel.max, token + extra.insertAfter)
+                selection = TextRange(sel.min + token.length + extra.caretOffsetFromInsertStart)
+            } else {
+                replace(sel.min, sel.max, token)
+            }
         }
     }
 
@@ -443,6 +456,10 @@ fun EditorScreen(
     )
     val currentLineHighlight = InactiveSurface
     val showCurrentLine = settings.highlightCurrentLine
+    val smartInput = remember(settings.tabSize, isReadOnly) {
+        SmartEditorInput(tabSize = { settings.tabSize }, enabled = { !isReadOnly })
+    }
+    val layoutHolder = remember { arrayOfNulls<TextLayoutResult>(1) }
     // One entry per *visual* (wrapped) row so the gutter stays aligned with wrapped
     // lines: only the first visual row of each logical line gets a number. We keep the
     // derived List<EditorLine> rather than the raw TextLayoutResult because
@@ -453,6 +470,7 @@ fun EditorScreen(
     val onFieldTextLayout: (androidx.compose.ui.unit.Density.(() -> TextLayoutResult?) -> Unit) =
         { getResult ->
             val layout = getResult()
+            layoutHolder[0] = layout
             val currentText = editorState.text
             editorLines = if (layout == null) {
                 listOf(EditorLine("1", 0, 0, 0f, 0f))
@@ -478,6 +496,8 @@ fun EditorScreen(
     val caretOffset = editorState.selection.start
     val currentLine = editorLines.lastOrNull { caretOffset >= it.startOffset } ?: editorLines.firstOrNull()
     val density = LocalDensity.current
+    val matchingPair = matchingBracket(editorState.text.toString(), caretOffset)
+    val bracketHighlight = ButtonSurface.copy(alpha = 0.4f)
 
     // Tell the highlighter which characters are on screen so it only styles those. The
     // line geometry and scroll offset are already tracked for the gutter, so this reuses
@@ -677,13 +697,32 @@ fun EditorScreen(
                         // Column is moved by verticalScroll) the line offsets have to be
                         // shifted by the scroll position and the field's top padding.
                         .drawBehind {
-                            if (!showCurrentLine) return@drawBehind
-                            currentLine?.let {
-                                drawRect(
-                                    color = currentLineHighlight,
-                                    topLeft = Offset(0f, lineY(it, gutterScrollState.value, this)),
-                                    size = Size(size.width, it.bottom - it.top)
-                                )
+                            if (showCurrentLine) {
+                                currentLine?.let {
+                                    drawRect(
+                                        color = currentLineHighlight,
+                                        topLeft = Offset(0f, lineY(it, gutterScrollState.value, this)),
+                                        size = Size(size.width, it.bottom - it.top)
+                                    )
+                                }
+                            }
+                            val layout = layoutHolder[0]
+                            val pair = matchingPair
+                            if (layout != null && pair != null && layout.layoutInput.text.isNotEmpty()) {
+                                val padX = 16.dp.toPx()
+                                val padY = EDITOR_VERTICAL_PADDING.toPx()
+                                val scroll = gutterScrollState.value.toFloat()
+                                fun highlightChar(index: Int) {
+                                    val i = index.coerceIn(0, layout.layoutInput.text.length - 1)
+                                    val box = layout.getBoundingBox(i)
+                                    drawRect(
+                                        color = bracketHighlight,
+                                        topLeft = Offset(box.left + padX, box.top + padY - scroll),
+                                        size = Size(box.width.coerceAtLeast(1f), box.height)
+                                    )
+                                }
+                                highlightChar(pair.openIndex)
+                                highlightChar(pair.closeIndex)
                             }
                         }
                 ) {
@@ -699,6 +738,7 @@ fun EditorScreen(
                             cursorBrush = SolidColor(PrimaryText),
                             onTextLayout = onFieldTextLayout,
                             outputTransformation = syntaxHighlighter,
+                            inputTransformation = smartInput,
                             readOnly = isReadOnly
                         )
                     } else {
@@ -716,6 +756,7 @@ fun EditorScreen(
                                 cursorBrush = SolidColor(PrimaryText),
                                 onTextLayout = onFieldTextLayout,
                                 outputTransformation = syntaxHighlighter,
+                                inputTransformation = smartInput,
                                 readOnly = isReadOnly
                             )
                         }
@@ -781,6 +822,8 @@ fun EditorScreen(
             onToggleHideToolbar = { toolbarHidden = !toolbarHidden },
             onGoToLine = ::goToLine,
             onShare = ::shareContent,
+            showMarkdownPreview = currentFileType == FileType.MARKDOWN,
+            onMarkdownPreview = { showMarkdownPreview = true },
             onRename = { showRenameDialog = true },
             onVersionHistory = {
                 VersionSession.fileId = currentUriString ?: "local:$currentFileName"
@@ -790,6 +833,13 @@ fun EditorScreen(
             },
             onSettings = onOpenSettings
         )
+
+        if (showMarkdownPreview) {
+            MarkdownPreviewOverlay(
+                source = editorState.text.toString(),
+                onClose = { showMarkdownPreview = false }
+            )
+        }
     }
 }
 
