@@ -26,7 +26,8 @@ data class EditorFile(
     val filePath: String,
     val fileType: FileType,
     val createdAt: Long,
-    val modifiedAt: Long
+    val modifiedAt: Long,
+    val readOnly: Boolean = false
 )
 
 fun relativeTimeLabel(millis: Long, now: Long = System.currentTimeMillis()): String {

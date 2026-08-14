@@ -83,7 +83,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.modern_editor.data.file.FileStorage
-import com.example.modern_editor.data.repository.InMemoryFileRepository
+import com.example.modern_editor.editorApp
 import com.example.modern_editor.domain.model.EditorFile
 import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.extension
@@ -194,8 +194,8 @@ fun EditorScreen(
     fun upsertRecent(uri: Uri, name: String, type: FileType) {
         scope.launch {
             val now = System.currentTimeMillis()
-            val existing = InMemoryFileRepository.getById(uri.toString())
-            InMemoryFileRepository.save(
+            val existing = context.editorApp.fileRepository.getById(uri.toString())
+            context.editorApp.fileRepository.save(
                 EditorFile(
                     id = uri.toString(),
                     name = name,
@@ -408,7 +408,7 @@ fun EditorScreen(
                     if (uriStr != null) {
                         val uri = Uri.parse(uriStr)
                         val renamedUri = FileStorage.renameDocument(context, uri, newName) ?: uri
-                        InMemoryFileRepository.delete(uri.toString())
+                        context.editorApp.fileRepository.delete(uri.toString())
                         currentUriString = renamedUri.toString()
                         currentFileName = newName
                         upsertRecent(renamedUri, newName, currentFileType)

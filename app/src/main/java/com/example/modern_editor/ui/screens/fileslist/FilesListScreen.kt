@@ -41,7 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.modern_editor.data.file.FileStorage
-import com.example.modern_editor.data.repository.InMemoryFileRepository
+import com.example.modern_editor.editorApp
 import com.example.modern_editor.domain.model.EditorFile
 import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.relativeTimeLabel
@@ -63,7 +63,7 @@ fun FilesListScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val files by InMemoryFileRepository.files.collectAsState()
+    val files by context.editorApp.fileRepository.observeAll().collectAsState(initial = emptyList())
     var renameTarget by remember { mutableStateOf<EditorFile?>(null) }
     var deleteTarget by remember { mutableStateOf<EditorFile?>(null) }
 
@@ -77,8 +77,9 @@ fun FilesListScreen(
                 scope.launch {
                     val uri = Uri.parse(target.filePath)
                     val renamedUri = FileStorage.renameDocument(context, uri, newName) ?: uri
-                    InMemoryFileRepository.delete(target.id)
-                    InMemoryFileRepository.save(
+                    val files = context.editorApp.fileRepository
+                    files.delete(target.id)
+                    files.save(
                         target.copy(
                             id = renamedUri.toString(),
                             name = newName,
@@ -99,7 +100,7 @@ fun FilesListScreen(
             onConfirm = {
                 scope.launch {
                     FileStorage.deleteDocument(context, Uri.parse(target.filePath))
-                    InMemoryFileRepository.delete(target.id)
+                    context.editorApp.fileRepository.delete(target.id)
                 }
                 deleteTarget = null
             },
