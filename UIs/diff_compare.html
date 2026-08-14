@@ -1,16 +1,14 @@
-<!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Diff Comparison - Kotlin Editor</title>
     <!-- Material Symbols -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Tailwind Config from Brand Anchors -->
@@ -122,7 +120,7 @@
 <!-- TOP BAR -->
 <header class="flex-shrink-0 h-toolbar-height flex items-center justify-between px-4 w-full z-50 border-b border-secondary-container bg-surface transition-colors duration-200">
     <!-- Left Action -->
-    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant text-primary transition-colors">
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors" style="color: rgb(53, 59, 71);">
         <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
     </button>
     <!-- Center Title -->
@@ -184,27 +182,31 @@
 </main>
 <!-- BOTTOM ACTION BUTTON -->
 <footer class="flex-shrink-0 w-full px-4 py-4 bg-surface border-t border-secondary-container z-50">
-    <button class="w-full flex items-center justify-center gap-2 rounded-xl h-12 shadow-sm hover:opacity-90 active:scale-[0.98] transition-all" onclick="document.getElementById('rollback-modal').classList.remove('hidden')" style="background-color: #7F52FF; color: #FFFFFF;">
+    <button class="w-full flex items-center justify-center gap-2 rounded-xl h-12 shadow-sm hover:opacity-90 active:scale-[0.98] transition-all" onclick="document.getElementById('rollback-modal').classList.remove('hidden')" style="background-color: rgb(53, 59, 71); color: rgb(222, 226, 237);">
         <span class="material-symbols-outlined" data-icon="history">history</span>
         <span class="font-headline-sm text-headline-sm tracking-wide text-[16px]">Rollback to v11</span>
     </button>
 </footer>
 <!-- Modal Scrim -->
-<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 hidden" id="rollback-modal" onclick="if(event.target === this) this.classList.add('hidden')">
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60" id="rollback-modal" onclick="if(event.target === this) this.classList.add('hidden')">
     <!-- Modal Container -->
-    <div class="bg-surface-container-high w-full max-w-sm rounded-xl shadow-xl border border-outline-variant overflow-hidden">
+    <div class="bg-surface-container-high w-full max-w-sm rounded-xl shadow-xl border border-outline-variant overflow-hidden" style="background-color: rgb(53, 59, 71); color: rgb(222, 226, 237);">
         <div class="p-6">
             <h2 class="font-headline-sm text-headline-sm text-on-surface mb-2">Roll back to v11?</h2>
             <p class="text-body-md text-on-surface-variant">Any unsaved changes in the current file will be lost.</p>
         </div>
         <!-- Actions -->
         <div class="flex justify-end gap-2 px-4 py-4 bg-surface-container-highest/30">
-            <button class="px-4 h-10 flex items-center justify-center rounded-full font-bold text-primary hover:bg-surface-variant transition-colors" onclick="document.getElementById('rollback-modal').classList.add('hidden')">
+            <button class="px-4 h-10 flex items-center justify-center rounded-full font-bold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all" onclick="document.getElementById('rollback-modal').classList.add('hidden')" style="background-color: rgb(53, 59, 71); color: rgb(222, 226, 237);">
                 CANCEL
             </button>
-            <button class="px-4 h-10 flex items-center justify-center rounded-full font-bold text-white shadow-sm hover:opacity-90 active:scale-[0.98] transition-all" style="background-color: #7F52FF;">
+            <button class="px-4 h-10 flex items-center justify-center rounded-full font-bold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all" style="background-color: rgb(53, 59, 71); color: rgb(222, 226, 237);">
                 ROLL BACK
             </button>
         </div>
     </div>
-</div></body></html>
+</div>
+
+
+
+</body></html>

@@ -1,15 +1,13 @@
-<!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Code Editor Modal Variants</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -131,6 +129,11 @@
             background-color: #6d42e5;
         }
     </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
 </head>
 <body class="min-h-screen relative flex flex-col items-center py-12 px-4 space-y-8 overflow-y-auto">
 <!-- Background Scrim (Simulated) -->
@@ -140,7 +143,7 @@
     <h2 class="font-headline-sm text-headline-sm text-on-surface m-0 p-0">New File</h2>
     <div class="flex flex-col gap-4">
         <div class="input-field rounded flex items-center px-3 h-10">
-            <input class="bg-transparent border-none outline-none text-on-surface font-code-md text-code-md flex-1 w-full placeholder:text-on-surface-variant/40" placeholder="filename" type="text"/>
+            <input class="bg-transparent border-none outline-none text-on-surface font-code-md text-code-md flex-1 w-full placeholder:text-on-surface-variant/40" placeholder="filename" type="text">
         </div>
         <div class="flex gap-2">
             <button class="flex-1 bg-surface-variant border border-outline-variant rounded px-3 py-2 text-center">
@@ -159,29 +162,31 @@
     </div>
     <div class="flex justify-end gap-3 mt-2">
         <button class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface px-4 py-2 rounded transition-colors">Cancel</button>
-        <button class="btn-primary font-body-md text-body-md px-4 py-2 rounded">Create</button>
+        <button class="font-body-md text-body-md px-4 py-2 rounded text-white" style="background-color: rgb(53, 59, 71);">Create</button>
     </div>
 </div>
 <!-- Variant 2: Save As -->
 <div class="modal-card bg-surface-container-low w-full max-w-sm rounded-2xl p-6 z-10 relative flex flex-col gap-6">
     <h2 class="font-headline-sm text-headline-sm text-on-surface m-0 p-0">Save As</h2>
     <div class="input-field rounded flex items-center px-3 h-10">
-        <input class="bg-transparent border-none outline-none text-on-surface font-code-md text-code-md flex-1 w-full" type="text" value="Main.kt"/>
+        <input class="bg-transparent border-none outline-none text-on-surface font-code-md text-code-md flex-1 w-full" type="text" value="Main.kt">
     </div>
     <div class="flex justify-end gap-3 mt-2">
         <button class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface px-4 py-2 rounded transition-colors">Cancel</button>
-        <button class="btn-primary font-body-md text-body-md px-4 py-2 rounded">Save</button>
+        <button class="font-body-md text-body-md px-4 py-2 rounded text-white" style="background-color: rgb(53, 59, 71);">Save</button>
     </div>
 </div>
 <!-- Variant 3: Rename File -->
 <div class="modal-card bg-surface-container-low w-full max-w-sm rounded-2xl p-6 z-10 relative flex flex-col gap-6">
     <h2 class="font-headline-sm text-headline-sm text-on-surface m-0 p-0">Rename File</h2>
     <div class="input-field rounded flex items-center px-3 h-10">
-        <input class="bg-transparent border-none outline-none text-on-surface font-code-md text-code-md flex-1 w-full" type="text" value="OldName.kt"/>
+        <input class="bg-transparent border-none outline-none text-on-surface font-code-md text-code-md flex-1 w-full" type="text" value="OldName.kt">
     </div>
     <div class="flex justify-end gap-3 mt-2">
         <button class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface px-4 py-2 rounded transition-colors">Cancel</button>
-        <button class="btn-primary font-body-md text-body-md px-4 py-2 rounded">Rename</button>
+        <button class="font-body-md text-body-md px-4 py-2 rounded text-white" style="background-color: rgb(53, 59, 71);">Rename</button>
     </div>
 </div>
+
+
 </body></html>

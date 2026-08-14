@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!DOCTYPE html><html class="dark" lang="en"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Kotlin Editor - Crash Recovery</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -105,6 +103,11 @@
             font-variation-settings: 'FILL' 1;
         }
     </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
 </head>
 <body class="bg-background text-on-background font-body-md h-screen w-screen overflow-hidden flex flex-col relative select-none">
 <!-- Mock Background App Content (Kotlin Editor Loading / Uninitialized State) -->
@@ -123,7 +126,7 @@
         <div class="w-gutter-editor border-r border-outline-variant bg-surface-container-lowest h-full"></div>
         <!-- Code Area -->
         <div class="flex-1 p-4 font-code-md text-code-md text-on-surface-variant opacity-30 flex items-center justify-center">
-            <span>Initializing workspace...</span>
+            <span class="">Initializing workspace...</span>
         </div>
     </main>
     <!-- BottomNavBar (Simulated) -->
@@ -164,12 +167,11 @@
                 <button class="px-5 py-2.5 rounded-lg font-body-md text-body-md font-semibold text-on-surface-variant hover:bg-surface-container-high transition-colors focus:outline-none focus:ring-2 focus:ring-outline-variant">
                     Discard
                 </button>
-                <button class="px-5 py-2.5 rounded-lg font-body-md text-body-md font-semibold bg-[#7F52FF] text-white hover:bg-[#6c42e5] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#7F52FF] focus:ring-offset-2 focus:ring-offset-surface-container flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">restore</span>
-                    Restore
-                </button>
+                <button class="px-5 py-2.5 rounded-lg font-body-md text-body-md font-semibold bg-[#353b47] text-white hover:bg-surface-container-highest transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-outline-variant focus:ring-offset-2 focus:ring-offset-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">restore</span>Restore</button>
             </div>
         </div>
     </div>
 </div>
+
+
 </body></html>

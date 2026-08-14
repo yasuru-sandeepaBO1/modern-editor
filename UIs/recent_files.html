@@ -6,100 +6,157 @@
     <title>Recent Files - Kotlin Editor</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
         tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "secondary": "#bdc7db",
-                        "on-secondary-fixed": "#121c2b",
-                        "primary-container": "#7794b2",
-                        "surface-container-low": "#171c23",
-                        "surface-dim": "#0f141b",
-                        "primary": "#accaea",
-                        "on-tertiary-container": "#242a37",
-                        "secondary-fixed-dim": "#bdc7db",
-                        "secondary-container": "#3d4758",
-                        "surface-tint": "#accaea",
-                        "error": "#ffb4ab",
-                        "tertiary": "#c1c6d7",
-                        "on-tertiary-fixed-variant": "#414755",
-                        "on-secondary-container": "#abb6c9",
-                        "on-secondary": "#273140",
-                        "primary-fixed-dim": "#accaea",
-                        "on-error-container": "#ffdad6",
-                        "inverse-surface": "#dee2ed",
-                        "on-tertiary": "#2a303e",
-                        "tertiary-container": "#8b91a1",
-                        "on-primary-container": "#0a2c45",
-                        "tertiary-fixed-dim": "#c1c6d7",
-                        "primary-fixed": "#cee5ff",
-                        "surface-variant": "#30353d",
-                        "inverse-primary": "#44617d",
-                        "on-primary-fixed": "#001d33",
-                        "on-secondary-fixed-variant": "#3d4758",
-                        "on-tertiary-fixed": "#161c28",
-                        "outline": "#8d9198",
-                        "on-primary": "#13334c",
-                        "error-container": "#93000a",
-                        "tertiary-fixed": "#dde2f4",
-                        "outline-variant": "#43474d",
-                        "surface-bright": "#343941",
-                        "on-surface": "#dee2ed",
-                        "surface": "#0f141b",
-                        "on-error": "#690005",
-                        "inverse-on-surface": "#2c3138",
-                        "surface-container-highest": "#30353d",
-                        "surface-container-high": "#252a32",
-                        "surface-container-lowest": "#090e15",
-                        "on-background": "#dee2ed",
-                        "background": "#0f141b",
-                        "surface-container": "#1b2027",
-                        "on-surface-variant": "#c3c7ce",
-                        "on-primary-fixed-variant": "#2c4964",
-                        "secondary-fixed": "#d9e3f8"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    "spacing": {
-                        "unit": "4px",
-                        "tab-height": "36px",
-                        "toolbar-height": "48px",
-                        "keyboard-accessory-height": "40px",
-                        "menu-item-height": "44px",
-                        "gutter-editor": "16px"
-                    },
-                    "fontFamily": {
-                        "body-md": ["Hanken Grotesk"],
-                        "body-sm": ["Hanken Grotesk"],
-                        "label-xs": ["JetBrains Mono"],
-                        "headline-sm": ["Hanken Grotesk"],
-                        "code-sm": ["JetBrains Mono"],
-                        "code-md": ["JetBrains Mono"]
-                    },
-                    "fontSize": {
-                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
-                        "label-xs": ["10px", { "lineHeight": "12px", "letterSpacing": "0.5px", "fontWeight": "500" }],
-                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
-                        "code-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
-                        "code-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
-                    }
-                }
-            }
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed": "#dde2f3",
+                      "on-primary-fixed": "#121c2c",
+                      "on-secondary-fixed": "#161c27",
+                      "on-surface": "#e2e1f2",
+                      "outline-variant": "#45474c",
+                      "on-secondary-fixed-variant": "#414754",
+                      "inverse-primary": "#555f71",
+                      "tertiary-container": "#475066",
+                      "outline": "#8f9097",
+                      "surface-container": "#1e1f2b",
+                      "secondary-fixed-dim": "#c1c6d6",
+                      "on-surface-variant": "#c5c6cd",
+                      "surface-tint": "#bdc7dc",
+                      "inverse-surface": "#e2e1f2",
+                      "surface-dim": "#11131e",
+                      "on-tertiary": "#273044",
+                      "on-error-container": "#ffdad6",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "surface-container-highest": "#333441",
+                      "tertiary-fixed": "#d9e2fd",
+                      "on-background": "#e2e1f2",
+                      "on-tertiary-container": "#bac2dc",
+                      "secondary-container": "#434956",
+                      "on-primary": "#273141",
+                      "surface": "#11131e",
+                      "surface-container-low": "#191b27",
+                      "primary": "#bdc7dc",
+                      "primary-container": "#475163",
+                      "on-primary-container": "#bac4d9",
+                      "error": "#ffb4ab",
+                      "on-secondary-container": "#b3b8c8",
+                      "on-secondary": "#2a303d",
+                      "surface-container-lowest": "#0c0d19",
+                      "on-primary-fixed-variant": "#3d4759",
+                      "primary-fixed-dim": "#bdc7dc",
+                      "tertiary-fixed-dim": "#bdc6e0",
+                      "surface-container-high": "#282936",
+                      "tertiary": "#bdc6e0",
+                      "on-tertiary-fixed": "#121b2f",
+                      "surface-variant": "#333441",
+                      "secondary": "#c1c6d6",
+                      "inverse-on-surface": "#2e2f3c",
+                      "background": "#11131e",
+                      "primary-fixed": "#d9e3f9",
+                      "on-tertiary-fixed-variant": "#3e475c",
+                      "surface-bright": "#373845"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sidebar-width": "260px",
+                      "unit": "4px",
+                      "sm": "8px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "gutter": "12px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "tab-height": "36px",
+                      "toolbar-height": "48px",
+                      "keyboard-accessory-height": "40px",
+                      "menu-item-height": "44px",
+                      "gutter-editor": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Geist"
+                      ],
+                      "body-lg": [
+                              "Geist"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "code-md": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Geist"
+                      ],
+                      "headline-lg": [
+                              "Geist"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "code-md": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
         }
     </script>
     <style>
         body {
-            background-color: #0f141b; /* surface */
-            color: #dee2ed; /* on-surface */
+            background-color: #11131e; /* surface */
+            color: #e2e1f2; /* on-surface */
         }
         /* Custom scrollbar for webkit */
         ::-webkit-scrollbar {
@@ -109,18 +166,23 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: #30353d; /* surface-variant */
+            background: #333441; /* surface-variant */
             border-radius: 4px;
+        }
+    </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
         }
     </style>
 </head>
 <body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col pt-toolbar-height pb-keyboard-accessory-height">
 <!-- TopAppBar -->
-<header class="fixed top-0 w-full h-toolbar-height bg-surface dark:bg-surface border-b border-secondary-container dark:border-secondary-container flex items-center justify-between px-4 z-50">
+<header class="fixed top-0 w-full h-toolbar-height bg-surface-container dark:bg-surface-container border-b border-surface-variant dark:border-surface-variant flex items-center justify-between px-4 z-50">
     <button aria-label="Back" class="text-primary dark:text-primary hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 p-2 rounded-full -ml-2">
         <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
     </button>
-    <h1 class="font-headline-sm text-headline-sm font-semibold text-on-surface dark:text-on-surface text-center flex-grow">Recent Files</h1>
+    <h1 class="font-headline-md text-headline-md font-semibold text-on-surface dark:text-on-surface text-center flex-grow">Recent Files</h1>
     <button aria-label="Search" class="text-primary dark:text-primary hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 p-2 rounded-full -mr-2">
         <span class="material-symbols-outlined" data-icon="search">search</span>
     </button>
@@ -128,13 +190,13 @@
 <!-- Main Content: Recent Files List -->
 <main class="flex-1 overflow-y-auto px-unit">
     <!-- File Item 1 -->
-    <div class="flex items-center justify-between py-3 px-3 border-b border-secondary-container hover:bg-surface-variant transition-colors duration-200 group">
+    <div class="flex items-center justify-between py-3 px-3 border-b border-surface-variant hover:bg-surface-variant transition-colors duration-200 group bg-surface-container-low">
         <div class="flex items-start flex-1 min-w-0 pr-4">
             <span class="material-symbols-outlined text-secondary mt-0.5 mr-3" data-icon="description">description</span>
             <div class="flex flex-col min-w-0 flex-1">
-                <span class="font-code-md text-code-md text-primary-fixed truncate">MainActivity.kt</span>
-                <span class="font-label-xs text-label-xs text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/java/com/example/app/MainActivity.kt</span>
-                <span class="font-body-sm text-body-sm text-outline mt-0.5">2 mins ago</span>
+                <span class="font-code-md text-code-md text-primary truncate">MainActivity.kt</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/java/com/example/app/MainActivity.kt</span>
+                <span class="font-body-md text-body-md text-outline mt-0.5">2 mins ago</span>
             </div>
         </div>
         <button aria-label="Remove from recent" class="text-on-surface-variant hover:text-error transition-colors p-2">
@@ -142,13 +204,13 @@
         </button>
     </div>
     <!-- File Item 2 -->
-    <div class="flex items-center justify-between py-3 px-3 border-b border-secondary-container hover:bg-surface-variant transition-colors duration-200 group">
+    <div class="flex items-center justify-between py-3 px-3 border-b border-surface-variant hover:bg-surface-variant transition-colors duration-200 group bg-surface-container-low">
         <div class="flex items-start flex-1 min-w-0 pr-4">
             <span class="material-symbols-outlined text-secondary mt-0.5 mr-3" data-icon="description">description</span>
             <div class="flex flex-col min-w-0 flex-1">
-                <span class="font-code-md text-code-md text-primary-fixed truncate">Utils.kt</span>
-                <span class="font-label-xs text-label-xs text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/java/com/example/app/util/Utils.kt</span>
-                <span class="font-body-sm text-body-sm text-outline mt-0.5">1 hour ago</span>
+                <span class="font-code-md text-code-md text-primary truncate">Utils.kt</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/java/com/example/app/util/Utils.kt</span>
+                <span class="font-body-md text-body-md text-outline mt-0.5">1 hour ago</span>
             </div>
         </div>
         <button aria-label="Remove from recent" class="text-on-surface-variant hover:text-error transition-colors p-2">
@@ -156,13 +218,13 @@
         </button>
     </div>
     <!-- File Item 3 -->
-    <div class="flex items-center justify-between py-3 px-3 border-b border-secondary-container hover:bg-surface-variant transition-colors duration-200 group">
+    <div class="flex items-center justify-between py-3 px-3 border-b border-surface-variant hover:bg-surface-variant transition-colors duration-200 group bg-surface-container-low">
         <div class="flex items-start flex-1 min-w-0 pr-4">
             <span class="material-symbols-outlined text-tertiary mt-0.5 mr-3" data-icon="settings_applications">settings_applications</span>
             <div class="flex flex-col min-w-0 flex-1">
-                <span class="font-code-md text-code-md text-primary-fixed truncate">build.gradle.kts</span>
-                <span class="font-label-xs text-label-xs text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/app/build.gradle.kts</span>
-                <span class="font-body-sm text-body-sm text-outline mt-0.5">3 hours ago</span>
+                <span class="font-code-md text-code-md text-primary truncate">build.gradle.kts</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/app/build.gradle.kts</span>
+                <span class="font-body-md text-body-md text-outline mt-0.5">3 hours ago</span>
             </div>
         </div>
         <button aria-label="Remove from recent" class="text-on-surface-variant hover:text-error transition-colors p-2">
@@ -170,13 +232,13 @@
         </button>
     </div>
     <!-- File Item 4 -->
-    <div class="flex items-center justify-between py-3 px-3 border-b border-secondary-container hover:bg-surface-variant transition-colors duration-200 group">
+    <div class="flex items-center justify-between py-3 px-3 border-b border-surface-variant hover:bg-surface-variant transition-colors duration-200 group bg-surface-container-low">
         <div class="flex items-start flex-1 min-w-0 pr-4">
             <span class="material-symbols-outlined text-outline mt-0.5 mr-3" data-icon="code">code</span>
             <div class="flex flex-col min-w-0 flex-1">
-                <span class="font-code-md text-code-md text-primary-fixed truncate">theme.xml</span>
-                <span class="font-label-xs text-label-xs text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/res/values/theme.xml</span>
-                <span class="font-body-sm text-body-sm text-outline mt-0.5">Yesterday</span>
+                <span class="font-code-md text-code-md text-primary truncate">theme.xml</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/res/values/theme.xml</span>
+                <span class="font-body-md text-body-md text-outline mt-0.5">Yesterday</span>
             </div>
         </div>
         <button aria-label="Remove from recent" class="text-on-surface-variant hover:text-error transition-colors p-2">
@@ -184,13 +246,13 @@
         </button>
     </div>
     <!-- File Item 5 -->
-    <div class="flex items-center justify-between py-3 px-3 border-b border-secondary-container hover:bg-surface-variant transition-colors duration-200 group">
+    <div class="flex items-center justify-between py-3 px-3 border-b border-surface-variant hover:bg-surface-variant transition-colors duration-200 group bg-surface-container-low">
         <div class="flex items-start flex-1 min-w-0 pr-4">
             <span class="material-symbols-outlined text-outline mt-0.5 mr-3" data-icon="code">code</span>
             <div class="flex flex-col min-w-0 flex-1">
-                <span class="font-code-md text-code-md text-primary-fixed truncate">strings.xml</span>
-                <span class="font-label-xs text-label-xs text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/res/values/strings.xml</span>
-                <span class="font-body-sm text-body-sm text-outline mt-0.5">Yesterday</span>
+                <span class="font-code-md text-code-md text-primary truncate">strings.xml</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/res/values/strings.xml</span>
+                <span class="font-body-md text-body-md text-outline mt-0.5">Yesterday</span>
             </div>
         </div>
         <button aria-label="Remove from recent" class="text-on-surface-variant hover:text-error transition-colors p-2">
@@ -198,13 +260,13 @@
         </button>
     </div>
     <!-- File Item 6 -->
-    <div class="flex items-center justify-between py-3 px-3 border-b border-secondary-container hover:bg-surface-variant transition-colors duration-200 group">
+    <div class="flex items-center justify-between py-3 px-3 border-b border-surface-variant hover:bg-surface-variant transition-colors duration-200 group bg-surface-container-low">
         <div class="flex items-start flex-1 min-w-0 pr-4">
             <span class="material-symbols-outlined text-outline mt-0.5 mr-3" data-icon="settings">settings</span>
             <div class="flex flex-col min-w-0 flex-1">
-                <span class="font-code-md text-code-md text-primary-fixed truncate">AndroidManifest.xml</span>
-                <span class="font-label-xs text-label-xs text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/AndroidManifest.xml</span>
-                <span class="font-body-sm text-body-sm text-outline mt-0.5">2 days ago</span>
+                <span class="font-code-md text-code-md text-primary truncate">AndroidManifest.xml</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">/storage/emulated/0/Projects/App/src/main/AndroidManifest.xml</span>
+                <span class="font-body-md text-body-md text-outline mt-0.5">2 days ago</span>
             </div>
         </div>
         <button aria-label="Remove from recent" class="text-on-surface-variant hover:text-error transition-colors p-2">

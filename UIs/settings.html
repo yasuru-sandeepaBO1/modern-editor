@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="dark" lang="en"><head>
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Kotlin Editor Settings</title>
@@ -190,18 +190,18 @@
 <main class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop w-full max-w-4xl mx-auto space-y-xl pb-24">
     <!-- Section 1: Editor Preferences -->
     <section class="space-y-md">
-        <h2 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-sm">Editor Preferences</h2>
-        <div class="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+        <h2 class="font-label-md text-label-md uppercase tracking-wider mb-sm text-on-surface-variant">Editor Preferences</h2>
+        <div class="bg-surface-container-low rounded-xl border overflow-hidden border-surface-container-low">
             <!-- Font Size Slider -->
             <div class="p-md flex items-center justify-between border-b border-outline-variant"><div class="flex-1">
                 <label class="font-body-md text-body-md text-on-surface block mb-sm">Font Size</label>
                 <div class="flex items-center gap-lg">
                     <div class="relative flex-1 flex items-center h-6">
                         <div class="absolute w-full h-1 bg-surface-variant rounded-full"></div>
-                        <div class="absolute h-1 bg-primary rounded-full" style="width: 40%"></div>
-                        <input class="absolute w-full appearance-none bg-transparent cursor-pointer z-10 focus:outline-none" max="24" min="10" type="range" value="14" oninput="this.previousElementSibling.style.width = ((this.value - 10) / 14 * 100) + '%'; this.parentElement.parentElement.nextElementSibling.innerText = this.value + 'px'">
+                        <div class="absolute h-1 bg-on-surface rounded-full" style="width: 40%"></div>
+                        <input class="absolute w-full appearance-none bg-transparent cursor-pointer z-10 focus:outline-none" max="24" min="10" oninput="this.previousElementSibling.style.width = ((this.value - 10) / 14 * 100) + '%'; this.parentElement.parentElement.nextElementSibling.innerText = this.value + 'px'" type="range" value="14">
                     </div>
-                    <div class="bg-surface-container-high border border-outline-variant px-md py-xs rounded text-primary font-label-md text-label-md min-w-[56px] text-center shadow-sm">
+                    <div class="bg-surface-container-high border border-outline-variant px-md py-xs rounded font-label-md text-label-md min-w-[56px] text-center shadow-sm text-on-surface">
                         14px
                     </div>
                 </div>
@@ -232,8 +232,8 @@
             <div class="p-md flex items-center justify-between border-b border-outline-variant hover:bg-surface-container-highest transition-colors cursor-pointer" onclick="document.getElementById('toggle-line-numbers').click()">
                 <span class="font-body-md text-body-md text-on-surface">Line Numbers</span>
                 <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
-                    <input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-line-numbers" name="toggle" type="checkbox">
-                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-line-numbers"></label>
+                    <input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-line-numbers" name="toggle" type="checkbox" placeholder="on" value="">
+
                 </div>
             </div>
             <!-- Highlight Current Line Toggle -->
@@ -241,20 +241,20 @@
                 <span class="font-body-md text-body-md text-on-surface">Highlight Current Line</span>
                 <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
                     <input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-highlight-line" name="toggle" type="checkbox">
-                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-highlight-line"></label>
+
                 </div>
             </div>
         </div>
     </section>
     <!-- Section 2: Appearance -->
     <section class="space-y-md">
-        <h2 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-sm">Appearance</h2>
-        <div class="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+        <h2 class="font-label-md text-label-md uppercase tracking-wider mb-sm text-on-surface-variant">Appearance</h2>
+        <div class="bg-surface-container-low rounded-xl border overflow-hidden border-surface-container-low">
             <!-- App Theme Segmented Control -->
             <div class="p-md flex flex-col md:flex-row md:items-center justify-between border-b border-outline-variant gap-sm">
                 <span class="font-body-md text-body-md text-on-surface">App Theme</span>
                 <div class="flex bg-surface-variant rounded p-xs">
-                    <button class="flex-1 md:flex-none px-md py-xs rounded bg-surface-container-high text-on-surface font-label-md text-label-md shadow-sm border border-outline-variant">Dark</button>
+                    <button class="flex-1 md:flex-none px-md py-xs rounded bg-surface-container-highest text-on-surface font-label-md text-label-md shadow-sm border border-outline">Dark</button>
                     <button class="flex-1 md:flex-none px-md py-xs rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors">Light</button>
                     <button class="flex-1 md:flex-none px-md py-xs rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors">System</button>
                 </div>
@@ -264,15 +264,15 @@
                 <span class="font-body-md text-body-md text-on-surface">Syntax Highlighting</span>
                 <div class="relative inline-block w-10 h-6 align-middle select-none transition duration-200 ease-in">
                     <input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-outline border-4 border-surface-container-low appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" id="toggle-syntax" name="toggle" type="checkbox">
-                    <label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle-syntax"></label>
+
                 </div>
             </div>
         </div>
     </section>
     <!-- Section 3: System & Recovery -->
     <section class="space-y-md">
-        <h2 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-sm">System &amp; Recovery</h2>
-        <div class="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+        <h2 class="font-label-md text-label-md uppercase tracking-wider mb-sm text-on-surface-variant">System &amp; Recovery</h2>
+        <div class="bg-surface-container-low rounded-xl border overflow-hidden border-surface-container-low">
             <!-- Auto-save Interval Dropdown -->
             <div class="p-md flex items-center justify-between border-b border-outline-variant">
                 <label class="font-body-md text-body-md text-on-surface">Auto-save Interval</label>
@@ -303,7 +303,6 @@
     </section>
 </main>
 <!-- BottomNavBar (Hidden on desktop based on shared component logic, but visible on mobile) -->
-
 <!-- Interactive script for toggles (optional enhancement) -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -315,8 +314,6 @@
         });
     });
 </script>
-
-
 
 
 </body></html>
