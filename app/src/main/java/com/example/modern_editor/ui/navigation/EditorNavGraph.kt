@@ -1,12 +1,18 @@
 package com.example.modern_editor.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.modern_editor.recovery.RecoveryHolder
+import com.example.modern_editor.ui.components.RecoveryDialog
 import com.example.modern_editor.ui.screens.diffcompare.DiffCompareScreen
 import com.example.modern_editor.ui.screens.editor.EditorScreen
 import com.example.modern_editor.ui.screens.fileslist.FilesListScreen
@@ -28,6 +34,8 @@ fun EditorNavGraph(navController: NavHostController = rememberNavController()) {
             )
         }
         composable(Routes.Home.route) {
+            val pendingRecovery = remember { RecoveryHolder.manager?.pendingRecovery() }
+            var showRecovery by remember { mutableStateOf(pendingRecovery != null) }
             HomeScreen(
                 onOpenFile = { uri -> navController.navigate(Routes.Editor.withFile(fileUri = uri)) },
                 onCreateFile = { name, type ->
@@ -36,6 +44,26 @@ fun EditorNavGraph(navController: NavHostController = rememberNavController()) {
                 onOpenFilesList = { navController.navigate(Routes.FilesList.route) },
                 onOpenSettings = { navController.navigate(Routes.Settings.route) }
             )
+            if (showRecovery && pendingRecovery != null) {
+                RecoveryDialog(
+                    fileName = pendingRecovery.fileName,
+                    onRestore = {
+                        showRecovery = false
+                        RecoveryHolder.prepareRestore(pendingRecovery)
+                        navController.navigate(
+                            Routes.Editor.withFile(
+                                fileUri = pendingRecovery.fileUri,
+                                fileName = pendingRecovery.fileName,
+                                fileType = pendingRecovery.fileType
+                            )
+                        )
+                    },
+                    onDiscard = {
+                        RecoveryHolder.manager?.discard()
+                        showRecovery = false
+                    }
+                )
+            }
         }
         composable(
             route = Routes.Editor.route,
