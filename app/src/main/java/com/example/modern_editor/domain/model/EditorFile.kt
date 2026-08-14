@@ -6,6 +6,19 @@ enum class FileType {
     PLAIN_TEXT
 }
 
+val FileType.extension: String
+    get() = when (this) {
+        FileType.KOTLIN -> ".kt"
+        FileType.MARKDOWN -> ".md"
+        FileType.PLAIN_TEXT -> ".txt"
+    }
+
+fun fileTypeFromFileName(name: String): FileType = when {
+    name.endsWith(".kt") -> FileType.KOTLIN
+    name.endsWith(".md") -> FileType.MARKDOWN
+    else -> FileType.PLAIN_TEXT
+}
+
 data class EditorFile(
     val id: String,
     val name: String,
