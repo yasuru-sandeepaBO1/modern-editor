@@ -50,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.SolidColor
@@ -83,6 +85,7 @@ import com.example.modern_editor.domain.model.EditorFile
 import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.extension
 import com.example.modern_editor.domain.model.fileTypeFromFileName
+import com.example.modern_editor.editor.highlight.KotlinHighlighter
 import com.example.modern_editor.editor.rememberEditorState
 import com.example.modern_editor.ui.components.FileMenu
 import com.example.modern_editor.ui.components.FileNameDialog
@@ -95,6 +98,7 @@ import com.example.modern_editor.ui.theme.HeaderSurface
 import com.example.modern_editor.ui.theme.InactiveSurface
 import com.example.modern_editor.ui.theme.PrimaryText
 import com.example.modern_editor.ui.theme.ScreenBackground
+import com.example.modern_editor.ui.theme.SyntaxColors
 import kotlinx.coroutines.launch
 
 private val ACCESSORY_KEYWORDS = listOf("val", "var", "fun", "if", "else", "for", "while", "return", "class")
@@ -111,6 +115,7 @@ private val CurrentLineHighlight = InactiveSurface
 private data class EditorLine(
     val label: String,
     val startOffset: Int,
+    val endOffset: Int,
     val top: Float,
     val bottom: Float
 )
@@ -314,11 +319,19 @@ fun EditorScreen(
         )
     }
 
+    // Kotlin files get syntax colouring; everything else stays plain. The transformation
+    // is remembered because BasicTextField keys internal state on the instance, and it
+    // carries a lex cache that we don't want thrown away on every recomposition.
+    val isKotlin = currentFileType == FileType.KOTLIN
+    val syntaxHighlighter = remember(isKotlin) { if (isKotlin) KotlinHighlighter() else null }
+
     // includeFontPadding = false keeps every line exactly lineHeight tall. With the
     // legacy font padding on, the gutter and the field disagree about where a row
     // starts and the two drift apart as lines are added.
     val fieldTextStyle = TextStyle(
-        color = PrimaryText,
+        // Unclassified code sits on Darcula's base text colour; plain-text and Markdown
+        // files keep the white they had before.
+        color = if (isKotlin) SyntaxColors.CodeText else PrimaryText,
         fontSize = 16.sp,
         lineHeight = 20.sp,
         platformStyle = PlatformTextStyle(includeFontPadding = false)
@@ -329,13 +342,13 @@ fun EditorScreen(
     // TextLayoutResult has no equals(), so storing it in mutableStateOf made every
     // layout pass look like a change and could spiral into runaway recomposition.
     // The top/bottom offsets also drive the current-line highlight.
-    var editorLines by remember { mutableStateOf(listOf(EditorLine("1", 0, 0f, 0f))) }
+    var editorLines by remember { mutableStateOf(listOf(EditorLine("1", 0, 0, 0f, 0f))) }
     val onFieldTextLayout: (androidx.compose.ui.unit.Density.(() -> TextLayoutResult?) -> Unit) =
         { getResult ->
             val layout = getResult()
             val currentText = editorState.text
             editorLines = if (layout == null) {
-                listOf(EditorLine("1", 0, 0f, 0f))
+                listOf(EditorLine("1", 0, 0, 0f, 0f))
             } else {
                 var logicalLine = 1
                 (0 until layout.lineCount).map { visualLine ->
@@ -344,6 +357,7 @@ fun EditorScreen(
                     EditorLine(
                         label = if (isLineStart) (logicalLine++).toString() else "",
                         startOffset = start,
+                        endOffset = layout.getLineEnd(visualLine),
                         top = layout.getLineTop(visualLine),
                         bottom = layout.getLineBottom(visualLine)
                     )
@@ -357,6 +371,20 @@ fun EditorScreen(
     val caretOffset = editorState.selection.start
     val currentLine = editorLines.lastOrNull { caretOffset >= it.startOffset } ?: editorLines.firstOrNull()
     val density = LocalDensity.current
+
+    // Tell the highlighter which characters are on screen so it only styles those. The
+    // line geometry and scroll offset are already tracked for the gutter, so this reuses
+    // them rather than measuring anything new.
+    var codeViewportHeight by remember { mutableIntStateOf(0) }
+    LaunchedEffect(syntaxHighlighter, editorLines, gutterScrollState.value, codeViewportHeight) {
+        val highlighter = syntaxHighlighter ?: return@LaunchedEffect
+        if (editorLines.isEmpty() || codeViewportHeight == 0) return@LaunchedEffect
+        val top = gutterScrollState.value.toFloat()
+        val bottom = top + codeViewportHeight
+        val firstVisible = editorLines.lastOrNull { it.top <= top } ?: editorLines.first()
+        val lastVisible = editorLines.firstOrNull { it.bottom >= bottom } ?: editorLines.last()
+        highlighter.setVisibleRange(firstVisible.startOffset, lastVisible.endOffset)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -521,6 +549,7 @@ fun EditorScreen(
                         .weight(1f)
                         .fillMaxHeight()
                         .background(EditorSurface)
+                        .onSizeChanged { codeViewportHeight = it.height }
                         // The field scrolls its own content, so unlike the gutter (whose
                         // Column is moved by verticalScroll) the line offsets have to be
                         // shifted by the scroll position and the field's top padding.
@@ -545,6 +574,7 @@ fun EditorScreen(
                             textStyle = fieldTextStyle,
                             cursorBrush = SolidColor(PrimaryText),
                             onTextLayout = onFieldTextLayout,
+                            outputTransformation = syntaxHighlighter,
                             readOnly = isReadOnly
                         )
                     } else {
@@ -561,6 +591,7 @@ fun EditorScreen(
                                 textStyle = fieldTextStyle,
                                 cursorBrush = SolidColor(PrimaryText),
                                 onTextLayout = onFieldTextLayout,
+                                outputTransformation = syntaxHighlighter,
                                 readOnly = isReadOnly
                             )
                         }
