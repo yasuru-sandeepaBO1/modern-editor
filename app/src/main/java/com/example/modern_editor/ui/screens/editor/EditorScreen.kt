@@ -92,6 +92,8 @@ import com.example.modern_editor.editor.highlight.KotlinHighlighter
 import com.example.modern_editor.editor.highlight.MarkdownHighlighter
 import com.example.modern_editor.editor.highlight.SyntaxHighlighter
 import com.example.modern_editor.editor.rememberEditorState
+import com.example.modern_editor.recovery.RecoveryHolder
+import com.example.modern_editor.recovery.RecoveryRecord
 import com.example.modern_editor.ui.components.FileMenu
 import com.example.modern_editor.ui.components.FileNameDialog
 import com.example.modern_editor.ui.components.OptionsMenu
@@ -105,6 +107,7 @@ import com.example.modern_editor.ui.theme.InactiveSurface
 import com.example.modern_editor.ui.theme.PrimaryText
 import com.example.modern_editor.ui.theme.ScreenBackground
 import com.example.modern_editor.ui.theme.SyntaxColors
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val ACCESSORY_KEYWORDS = listOf("val", "var", "fun", "if", "else", "for", "while", "return", "class")
@@ -211,6 +214,7 @@ fun EditorScreen(
             val written = editorState.text.toString()
             FileStorage.writeText(context, uri, written)
             savedSnapshot = written
+            RecoveryHolder.manager?.clear()
             upsertRecent(uri, currentFileName, currentFileType)
             if (leaveAfterSave) {
                 leaveAfterSave = false
@@ -249,14 +253,47 @@ fun EditorScreen(
         upsertRecent(uri, displayName, currentFileType)
     }
 
+    fun applyRecovery(record: RecoveryRecord) {
+        editorState.edit { replace(0, length, record.content) }
+        undoState.clearHistory()
+        savedSnapshot = record.savedSnapshot
+        currentUriString = record.fileUri
+        currentFileName = record.fileName
+        currentFileType = record.fileType.let {
+            runCatching { FileType.valueOf(it) }.getOrNull()
+        } ?: FileType.PLAIN_TEXT
+    }
+
     val openDocumentLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { scope.launch { loadFile(it) } } }
 
     LaunchedEffect(initialFileUri) {
+        val restored = RecoveryHolder.takePendingApply()
+        if (restored != null) {
+            applyRecovery(restored)
+            return@LaunchedEffect
+        }
         val uriString = initialFileUri
         if (uriString != null) {
             loadFile(Uri.parse(uriString))
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val manager = RecoveryHolder.manager ?: return@LaunchedEffect
+        while (true) {
+            delay(manager.intervalMs)
+            manager.cache(
+                RecoveryRecord(
+                    fileUri = currentUriString,
+                    fileName = currentFileName,
+                    fileType = currentFileType.name,
+                    content = editorState.text.toString(),
+                    savedSnapshot = savedSnapshot,
+                    timestamp = System.currentTimeMillis()
+                )
+            )
         }
     }
 
@@ -336,6 +373,7 @@ fun EditorScreen(
             },
             onDiscard = {
                 showUnsavedDialog = false
+                RecoveryHolder.manager?.clear()
                 onBack()
             },
             onCancel = { showUnsavedDialog = false }
