@@ -59,6 +59,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -83,9 +84,7 @@ import kotlin.math.roundToInt
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.example.modern_editor.data.file.FileStorage
 import com.example.modern_editor.editorApp
-import com.example.modern_editor.domain.model.EditorFile
 import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.extension
 import com.example.modern_editor.domain.model.fileTypeFromFileName
@@ -95,8 +94,9 @@ import com.example.modern_editor.editor.highlight.SyntaxHighlighter
 import com.example.modern_editor.editor.rememberEditorState
 import com.example.modern_editor.recovery.RecoveryHolder
 import com.example.modern_editor.recovery.RecoveryRecord
-import com.example.modern_editor.version.VersionSession
+import com.example.modern_editor.ui.AppViewModelFactory
 import com.example.modern_editor.ui.components.FileMenu
+import com.example.modern_editor.version.VersionSession
 import com.example.modern_editor.ui.components.FileNameDialog
 import com.example.modern_editor.ui.components.OptionsMenu
 import com.example.modern_editor.ui.components.UnsavedChangesDialog
@@ -163,6 +163,8 @@ fun EditorScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val viewModel: EditorViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
+    val editorError by viewModel.error.collectAsState()
 
     val editorState = rememberEditorState()
     val undoState = editorState.undoState
@@ -193,34 +195,17 @@ fun EditorScreen(
     // Set when a save was started specifically so we could leave afterwards.
     var leaveAfterSave by remember { mutableStateOf(false) }
 
-    fun upsertRecent(uri: Uri, name: String, type: FileType) {
-        scope.launch {
-            val now = System.currentTimeMillis()
-            val existing = context.editorApp.fileRepository.getById(uri.toString())
-            context.editorApp.fileRepository.save(
-                EditorFile(
-                    id = uri.toString(),
-                    name = name,
-                    content = "",
-                    filePath = uri.toString(),
-                    fileType = type,
-                    createdAt = existing?.createdAt ?: now,
-                    modifiedAt = now
-                )
-            )
-        }
-    }
-
     fun saveTo(uri: Uri) {
         scope.launch {
             val written = editorState.text.toString()
-            FileStorage.writeText(context, uri, written)
-            savedSnapshot = written
-            RecoveryHolder.manager?.clear()
-            upsertRecent(uri, currentFileName, currentFileType)
-            if (leaveAfterSave) {
-                leaveAfterSave = false
-                onBack()
+            val ok = viewModel.save(uri, written, currentFileName, currentFileType)
+            if (ok) {
+                savedSnapshot = written
+                RecoveryHolder.manager?.clear()
+                if (leaveAfterSave) {
+                    leaveAfterSave = false
+                    onBack()
+                }
             }
         }
     }
@@ -229,10 +214,7 @@ fun EditorScreen(
         ActivityResultContracts.CreateDocument("application/octet-stream")
     ) { uri ->
         if (uri != null) {
-            FileStorage.takePersistablePermission(context, uri)
             currentUriString = uri.toString()
-            currentFileName = FileStorage.displayNameOf(context, uri) ?: currentFileName
-            currentFileType = fileTypeFromFileName(currentFileName)
             saveTo(uri)
         }
     }
@@ -243,16 +225,13 @@ fun EditorScreen(
     }
 
     suspend fun loadFile(uri: Uri) {
-        FileStorage.takePersistablePermission(context, uri)
-        val content = FileStorage.readText(context, uri)
-        editorState.edit { replace(0, length, content) }
+        val loaded = viewModel.load(uri) ?: return
+        editorState.edit { replace(0, length, loaded.content) }
         undoState.clearHistory()
-        savedSnapshot = content
-        val displayName = FileStorage.displayNameOf(context, uri) ?: (uri.lastPathSegment ?: "untitled.txt")
-        currentUriString = uri.toString()
-        currentFileName = displayName
-        currentFileType = fileTypeFromFileName(displayName)
-        upsertRecent(uri, displayName, currentFileType)
+        savedSnapshot = loaded.content
+        currentUriString = loaded.uri.toString()
+        currentFileName = loaded.name
+        currentFileType = loaded.type
     }
 
     fun applyRecovery(record: RecoveryRecord) {
@@ -415,12 +394,12 @@ fun EditorScreen(
                 scope.launch {
                     val uriStr = currentUriString
                     if (uriStr != null) {
-                        val uri = Uri.parse(uriStr)
-                        val renamedUri = FileStorage.renameDocument(context, uri, newName) ?: uri
-                        context.editorApp.fileRepository.delete(uri.toString())
-                        currentUriString = renamedUri.toString()
-                        currentFileName = newName
-                        upsertRecent(renamedUri, newName, currentFileType)
+                        val renamedUri = viewModel.rename(Uri.parse(uriStr), newName)
+                        if (renamedUri != null) {
+                            currentUriString = renamedUri.toString()
+                            currentFileName = newName
+                            currentFileType = fileTypeFromFileName(newName)
+                        }
                     } else {
                         currentFileName = newName
                     }
@@ -512,6 +491,18 @@ fun EditorScreen(
                 .statusBarsPadding()
                 .imePadding()
         ) {
+            if (editorError != null) {
+                Text(
+                    text = editorError ?: "",
+                    color = ButtonText,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(InactiveSurface)
+                        .clickable { viewModel.clearError() }
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+            }
             // Two-row header, per UIs/editor.html: the hamburger and the file tab sit on
             // the first row, the back arrow / context label / actions on the second.
             Row(

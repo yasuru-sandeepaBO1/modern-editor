@@ -33,11 +33,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +51,7 @@ import com.example.modern_editor.domain.model.Version
 import com.example.modern_editor.domain.model.VersionType
 import com.example.modern_editor.domain.model.relativeTimeLabel
 import com.example.modern_editor.editorApp
+import com.example.modern_editor.ui.AppViewModelFactory
 import com.example.modern_editor.ui.components.RollbackConfirmDialog
 import com.example.modern_editor.ui.theme.ButtonSurface
 import com.example.modern_editor.ui.theme.ButtonText
@@ -58,8 +61,6 @@ import com.example.modern_editor.ui.theme.InactiveSurface
 import com.example.modern_editor.ui.theme.PrimaryText
 import com.example.modern_editor.ui.theme.ScreenBackground
 import com.example.modern_editor.version.DiffSession
-import com.example.modern_editor.version.RollbackManager
-import com.example.modern_editor.version.VersionManager
 import com.example.modern_editor.version.VersionSession
 import kotlinx.coroutines.launch
 
@@ -71,18 +72,14 @@ fun VersionHistoryScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val viewModel: HistoryViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
     val resolvedId = fileId?.takeIf { it.isNotBlank() } ?: VersionSession.fileId
-    val repo = context.editorApp.versionRepository
-    var versions by remember { mutableStateOf<List<Version>>(emptyList()) }
+    val versions by viewModel.versions.collectAsState()
     var showLabelDialog by remember { mutableStateOf(false) }
     var labelInput by remember { mutableStateOf("") }
     var rollbackTarget by remember { mutableStateOf<Version?>(null) }
 
-    fun refresh() {
-        scope.launch { versions = repo.getVersionsForFile(resolvedId).sortedByDescending { it.versionNumber } }
-    }
-
-    LaunchedEffect(resolvedId) { refresh() }
+    LaunchedEffect(resolvedId) { viewModel.refresh(resolvedId) }
 
     if (showLabelDialog) {
         AlertDialog(
@@ -113,13 +110,12 @@ fun VersionHistoryScreen(
                     onClick = {
                         showLabelDialog = false
                         scope.launch {
-                            VersionManager(repo).createVersion(
+                            viewModel.saveVersion(
                                 fileId = resolvedId,
                                 content = VersionSession.currentContent,
                                 label = labelInput.trim().ifEmpty { null }
                             )
                             labelInput = ""
-                            refresh()
                         }
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = PrimaryText)
@@ -140,7 +136,7 @@ fun VersionHistoryScreen(
             onConfirm = {
                 rollbackTarget = null
                 scope.launch {
-                    val content = RollbackManager(repo).contentAt(resolvedId, target.id)
+                    val content = viewModel.reconstruct(resolvedId, target.id) ?: return@launch
                     VersionSession.pendingRollbackContent.value = content
                     VersionSession.currentContent = content
                     onBack()
@@ -195,7 +191,7 @@ fun VersionHistoryScreen(
                         version = version,
                         onDiff = {
                             scope.launch {
-                                val selected = RollbackManager(repo).contentAt(resolvedId, version.id)
+                                val selected = viewModel.reconstruct(resolvedId, version.id) ?: return@launch
                                 DiffSession.oldText = selected
                                 DiffSession.newText = VersionSession.currentContent
                                 DiffSession.fromLabel = "v${version.versionNumber}"

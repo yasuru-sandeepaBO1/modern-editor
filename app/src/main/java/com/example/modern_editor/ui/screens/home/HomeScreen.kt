@@ -42,12 +42,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.modern_editor.editorApp
 import com.example.modern_editor.domain.model.EditorFile
 import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.extension
 import com.example.modern_editor.domain.model.relativeTimeLabel
+import com.example.modern_editor.ui.AppViewModelFactory
 import com.example.modern_editor.ui.components.AppDrawer
+import com.example.modern_editor.ui.screens.fileslist.FilesListViewModel
 import com.example.modern_editor.ui.components.FileNameDialog
 import com.example.modern_editor.ui.theme.ButtonSurface
 import com.example.modern_editor.ui.theme.ButtonText
@@ -68,7 +71,8 @@ fun HomeScreen(
     var showNewFileDialog by remember { mutableStateOf(false) }
     var drawerOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val recentFiles by context.editorApp.fileRepository.observeAll().collectAsState(initial = emptyList())
+    val filesViewModel: FilesListViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
+    val recentFiles by filesViewModel.files.collectAsState(initial = emptyList())
 
     val openDocumentLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()

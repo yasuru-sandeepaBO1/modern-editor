@@ -1,6 +1,5 @@
 package com.example.modern_editor.ui.screens.fileslist
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,11 +39,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.modern_editor.data.file.FileStorage
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.modern_editor.editorApp
 import com.example.modern_editor.domain.model.EditorFile
 import com.example.modern_editor.domain.model.FileType
 import com.example.modern_editor.domain.model.relativeTimeLabel
+import com.example.modern_editor.ui.AppViewModelFactory
 import com.example.modern_editor.ui.components.DeleteConfirmDialog
 import com.example.modern_editor.ui.components.FileNameDialog
 import com.example.modern_editor.ui.theme.ButtonSurface
@@ -63,7 +63,8 @@ fun FilesListScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val files by context.editorApp.fileRepository.observeAll().collectAsState(initial = emptyList())
+    val viewModel: FilesListViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
+    val files by viewModel.files.collectAsState(initial = emptyList())
     var renameTarget by remember { mutableStateOf<EditorFile?>(null) }
     var deleteTarget by remember { mutableStateOf<EditorFile?>(null) }
 
@@ -74,20 +75,7 @@ fun FilesListScreen(
             confirmLabel = "Rename",
             showTypeSelector = false,
             onConfirm = { newName, _ ->
-                scope.launch {
-                    val uri = Uri.parse(target.filePath)
-                    val renamedUri = FileStorage.renameDocument(context, uri, newName) ?: uri
-                    val files = context.editorApp.fileRepository
-                    files.delete(target.id)
-                    files.save(
-                        target.copy(
-                            id = renamedUri.toString(),
-                            name = newName,
-                            filePath = renamedUri.toString(),
-                            modifiedAt = System.currentTimeMillis()
-                        )
-                    )
-                }
+                scope.launch { viewModel.rename(target, newName) }
                 renameTarget = null
             },
             onDismiss = { renameTarget = null }
@@ -98,10 +86,7 @@ fun FilesListScreen(
         DeleteConfirmDialog(
             fileName = target.name,
             onConfirm = {
-                scope.launch {
-                    FileStorage.deleteDocument(context, Uri.parse(target.filePath))
-                    context.editorApp.fileRepository.delete(target.id)
-                }
+                scope.launch { viewModel.delete(target) }
                 deleteTarget = null
             },
             onDismiss = { deleteTarget = null }

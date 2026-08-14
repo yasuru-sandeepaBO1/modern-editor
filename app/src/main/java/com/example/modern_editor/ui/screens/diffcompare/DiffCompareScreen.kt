@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.modern_editor.domain.model.DiffLine
 import com.example.modern_editor.domain.model.LineChangeType
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.modern_editor.editorApp
+import com.example.modern_editor.ui.AppViewModelFactory
 import com.example.modern_editor.ui.components.RollbackConfirmDialog
 import com.example.modern_editor.ui.theme.ButtonSurface
 import com.example.modern_editor.ui.theme.ButtonText
@@ -49,9 +51,9 @@ import com.example.modern_editor.ui.theme.HeaderSurface
 import com.example.modern_editor.ui.theme.InactiveSurface
 import com.example.modern_editor.ui.theme.PrimaryText
 import com.example.modern_editor.ui.theme.ScreenBackground
+import com.example.modern_editor.ui.screens.versionhistory.HistoryViewModel
 import com.example.modern_editor.version.DiffEngine
 import com.example.modern_editor.version.DiffSession
-import com.example.modern_editor.version.RollbackManager
 import com.example.modern_editor.version.VersionSession
 import kotlinx.coroutines.launch
 
@@ -59,6 +61,7 @@ import kotlinx.coroutines.launch
 fun DiffCompareScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val historyViewModel: HistoryViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
     val result = remember(DiffSession.oldText, DiffSession.newText, DiffSession.fromLabel, DiffSession.toLabel) {
         DiffEngine.compare(
             DiffSession.oldText,
@@ -81,8 +84,7 @@ fun DiffCompareScreen(onBack: () -> Unit) {
                     val fileId = DiffSession.rollbackFileId
                     val versionId = DiffSession.rollbackVersionId
                     if (fileId.isNotBlank() && versionId.isNotBlank()) {
-                        val content = RollbackManager(context.editorApp.versionRepository)
-                            .contentAt(fileId, versionId)
+                        val content = historyViewModel.reconstruct(fileId, versionId) ?: return@launch
                         VersionSession.pendingRollbackContent.value = content
                         VersionSession.currentContent = content
                     }
