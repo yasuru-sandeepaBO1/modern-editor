@@ -9,11 +9,14 @@ enum class LineChangeType {
 data class DiffLine(
     val type: LineChangeType,
     val text: String,
-    val lineNumber: Int
+    val oldLineNumber: Int?,
+    val newLineNumber: Int?
 )
 
 data class DiffResult(
     val fromVersionId: String,
     val toVersionId: String,
     val lines: List<DiffLine>
-)
+) {
+    val hasChanges: Boolean get() = lines.any { it.type != LineChangeType.UNCHANGED }
+}
