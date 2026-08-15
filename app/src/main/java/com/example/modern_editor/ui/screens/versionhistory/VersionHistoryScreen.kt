@@ -75,6 +75,7 @@ fun VersionHistoryScreen(
     val viewModel: HistoryViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
     val resolvedId = fileId?.takeIf { it.isNotBlank() } ?: VersionSession.fileId
     val versions by viewModel.versions.collectAsState()
+    val error by viewModel.error.collectAsState()
     var showLabelDialog by remember { mutableStateOf(false) }
     var labelInput by remember { mutableStateOf("") }
     var rollbackTarget by remember { mutableStateOf<Version?>(null) }
@@ -173,6 +174,18 @@ fun VersionHistoryScreen(
             IconButton(onClick = { showLabelDialog = true }) {
                 Icon(Icons.Filled.Save, contentDescription = "Save Version", tint = PrimaryText)
             }
+        }
+
+        error?.let { msg ->
+            Text(
+                text = msg,
+                color = PrimaryText,
+                fontSize = 13.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(ButtonSurface)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
 
         if (versions.isEmpty()) {

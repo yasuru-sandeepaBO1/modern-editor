@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.modern_editor.editor.FindHighlightState
 import com.example.modern_editor.editor.findMatches
 import com.example.modern_editor.ui.theme.ButtonSurface
 import com.example.modern_editor.ui.theme.ButtonText
@@ -46,6 +47,7 @@ import com.example.modern_editor.ui.theme.PrimaryText
 @Composable
 fun FindReplaceBar(
     editorState: TextFieldState,
+    findHighlightState: FindHighlightState,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,12 +64,15 @@ fun FindReplaceBar(
         if (matches.isEmpty()) return
         val safeIndex = ((index % matches.size) + matches.size) % matches.size
         currentIndex = safeIndex
+        findHighlightState.currentIndex = safeIndex
         val range = matches[safeIndex]
         editorState.edit { selection = TextRange(range.first, range.last + 1) }
     }
 
     LaunchedEffect(matches) {
         currentIndex = 0
+        findHighlightState.matches = matches
+        findHighlightState.currentIndex = 0
         if (matches.isNotEmpty()) selectMatch(0)
     }
 

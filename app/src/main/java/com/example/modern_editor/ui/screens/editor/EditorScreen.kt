@@ -67,6 +67,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -93,6 +94,7 @@ import com.example.modern_editor.domain.model.fileTypeFromFileName
 import com.example.modern_editor.editor.highlight.KotlinHighlighter
 import com.example.modern_editor.editor.highlight.MarkdownHighlighter
 import com.example.modern_editor.editor.highlight.SyntaxHighlighter
+import com.example.modern_editor.editor.FindHighlightState
 import com.example.modern_editor.editor.autoCloseAfter
 import com.example.modern_editor.editor.matchingBracket
 import com.example.modern_editor.editor.offsetForLine
@@ -173,6 +175,7 @@ fun EditorScreen(
     val gutterScrollState = rememberScrollState()
     val wordWrap = settings.wordWrap
     var showFind by remember { mutableStateOf(false) }
+    val findHighlightState = remember { FindHighlightState() }
     var fileMenuOpen by remember { mutableStateOf(false) }
     var optionsMenuOpen by remember { mutableStateOf(false) }
     var fullScreen by remember { mutableStateOf(false) }
@@ -498,6 +501,10 @@ fun EditorScreen(
     val density = LocalDensity.current
     val matchingPair = matchingBracket(editorState.text.toString(), caretOffset)
     val bracketHighlight = ButtonSurface.copy(alpha = 0.4f)
+    val findMatchColor = Color(0xFFFFFF00).copy(alpha = 0.25f)
+    val findCurrentMatchColor = Color(0xFFFFFF00).copy(alpha = 0.50f)
+    val findMatches = findHighlightState.matches
+    val findCurrentIndex = findHighlightState.currentIndex
 
     // Tell the highlighter which characters are on screen so it only styles those. The
     // line geometry and scroll offset are already tracked for the gutter, so this reuses
@@ -624,6 +631,18 @@ fun EditorScreen(
                 }
             }
 
+            if (showFind) {
+                FindReplaceBar(
+                    editorState = editorState,
+                    findHighlightState = findHighlightState,
+                    onClose = {
+                        showFind = false
+                        findHighlightState.matches = emptyList()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Row(
                 modifier = Modifier
                     .weight(1f)
@@ -708,21 +727,52 @@ fun EditorScreen(
                             }
                             val layout = layoutHolder[0]
                             val pair = matchingPair
-                            if (layout != null && pair != null && layout.layoutInput.text.isNotEmpty()) {
-                                val padX = 16.dp.toPx()
-                                val padY = EDITOR_VERTICAL_PADDING.toPx()
-                                val scroll = gutterScrollState.value.toFloat()
-                                fun highlightChar(index: Int) {
-                                    val i = index.coerceIn(0, layout.layoutInput.text.length - 1)
-                                    val box = layout.getBoundingBox(i)
-                                    drawRect(
-                                        color = bracketHighlight,
-                                        topLeft = Offset(box.left + padX, box.top + padY - scroll),
-                                        size = Size(box.width.coerceAtLeast(1f), box.height)
-                                    )
+                            val padX = 16.dp.toPx()
+                            val padY = EDITOR_VERTICAL_PADDING.toPx()
+                            val scroll = gutterScrollState.value.toFloat()
+                            if (layout != null && layout.layoutInput.text.isNotEmpty()) {
+                                val textLen = layout.layoutInput.text.length
+                                if (pair != null) {
+                                    fun highlightChar(index: Int) {
+                                        val i = index.coerceIn(0, textLen - 1)
+                                        val box = layout.getBoundingBox(i)
+                                        drawRect(
+                                            color = bracketHighlight,
+                                            topLeft = Offset(box.left + padX, box.top + padY - scroll),
+                                            size = Size(box.width.coerceAtLeast(1f), box.height)
+                                        )
+                                    }
+                                    highlightChar(pair.openIndex)
+                                    highlightChar(pair.closeIndex)
                                 }
-                                highlightChar(pair.openIndex)
-                                highlightChar(pair.closeIndex)
+                                if (showFind && findMatches.isNotEmpty()) {
+                                    findMatches.forEachIndexed { idx, matchRange ->
+                                        val mStart = matchRange.first.coerceIn(0, textLen - 1)
+                                        val mEnd = matchRange.last.coerceIn(0, textLen - 1)
+                                        val startBox = layout.getBoundingBox(mStart)
+                                        val endBox = layout.getBoundingBox(mEnd)
+                                        val bg = if (idx == findCurrentIndex)
+                                            findCurrentMatchColor else findMatchColor
+                                        if (startBox.top == endBox.top) {
+                                            drawRect(
+                                                color = bg,
+                                                topLeft = Offset(startBox.left + padX, startBox.top + padY - scroll),
+                                                size = Size(endBox.right - startBox.left, startBox.height)
+                                            )
+                                        } else {
+                                            drawRect(
+                                                color = bg,
+                                                topLeft = Offset(startBox.left + padX, startBox.top + padY - scroll),
+                                                size = Size(size.width - startBox.left - padX, startBox.height)
+                                            )
+                                            drawRect(
+                                                color = bg,
+                                                topLeft = Offset(padX, endBox.top + padY - scroll),
+                                                size = Size(endBox.right, endBox.height)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                 ) {
@@ -762,15 +812,6 @@ fun EditorScreen(
                         }
                     }
 
-                    if (showFind) {
-                        FindReplaceBar(
-                            editorState = editorState,
-                            onClose = { showFind = false },
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .fillMaxWidth()
-                        )
-                    }
                 }
             }
 
