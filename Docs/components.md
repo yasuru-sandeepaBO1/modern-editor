@@ -770,7 +770,7 @@ Only after all required functionality is stable.
 - Kotlin formatting
 - Markdown preview
 - Themes
-- Custom fonts
+-  fonts
 - Better dialogs
 - Better empty states
 - File statistics — not present in the current Options Menu design; kept here as deferred/optional
