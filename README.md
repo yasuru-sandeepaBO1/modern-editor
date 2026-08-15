@@ -34,7 +34,7 @@ A native Android text editor for Kotlin and Markdown, with local file management
 - Rollback to any previous version
 
 ### Settings
-- Font size, tab size, word wrap, theme, line numbers, auto-recovery interval
+- Font size, tab size, word wrap, line numbers, auto-recovery interval
 
 ---
 
@@ -306,7 +306,6 @@ Let the user customize how the editor looks and behaves.
 - Tab size
 - Word wrap
 - Line numbers
-- Theme
 - Syntax highlighting
 - Auto-recovery interval
 

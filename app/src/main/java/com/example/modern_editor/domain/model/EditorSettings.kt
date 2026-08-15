@@ -6,10 +6,7 @@ data class EditorSettings(
     val wordWrap: Boolean = true,
     val lineNumbers: Boolean = true,
     val highlightCurrentLine: Boolean = true,
-    val theme: AppTheme = AppTheme.DARK,
     val syntaxHighlighting: Boolean = true,
     val autoSaveIntervalMs: Long = 10_000L,
     val readOnlyByDefault: Boolean = false
 )
-
-enum class AppTheme { DARK, LIGHT, SYSTEM }

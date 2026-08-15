@@ -40,7 +40,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.modern_editor.domain.model.AppTheme
 import com.example.modern_editor.domain.model.EditorSettings
 import com.example.modern_editor.editorApp
 import com.example.modern_editor.ui.AppViewModelFactory
@@ -95,7 +94,6 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
             SettingsSection("Appearance") {
-                ThemeRow(settings.theme) { viewModel.update { s -> s.copy(theme = it) } }
                 ToggleRow("Syntax Highlighting", settings.syntaxHighlighting) {
                     viewModel.update { s -> s.copy(syntaxHighlighting = !s.syntaxHighlighting) }
                 }
@@ -213,39 +211,6 @@ private fun DropdownRow(label: String, value: String, options: List<String>, onS
                         }
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ThemeRow(selected: AppTheme, onSelect: (AppTheme) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text("App Theme", color = PrimaryText, fontSize = 14.sp)
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(InactiveSurface)
-                .padding(2.dp)
-        ) {
-            AppTheme.entries.forEach { theme ->
-                val active = theme == selected
-                Text(
-                    text = theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                    color = if (active) PrimaryText else ButtonText,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(if (active) ButtonSurface else androidx.compose.ui.graphics.Color.Transparent)
-                        .clickable { onSelect(theme) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                )
             }
         }
     }
