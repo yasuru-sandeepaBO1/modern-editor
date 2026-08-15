@@ -10,7 +10,7 @@
 - **Component 9** — Diff screen's empty state (identical versions) made explicit
 - **Component 11** — new test case: only a file's very first version is ever a SNAPSHOT
 - **Component 12** — Rollback now requires a confirmation step before it executes
-- **Component 14** — Settings sections and controls finalized (live slider, segmented theme control, simple on/off highlighting toggle)
+- **Component 14** — Settings sections and controls finalized (live slider, dark theme only, simple on/off highlighting toggle)
 - **Component 15** — added Full Screen, Hide Toolbar, and Share (confirmed final UI elements with no other home); File Statistics stays deferred
 
 ## Finalized screen & menu inventory
@@ -720,7 +720,7 @@ Reached from two places: Home's App Drawer, and Editor's Options Menu — both o
 - SettingsRepository
 - DataStore persistence
 - Section: Editor Preferences — Font Size (interactive slider, live value display), Tab Size (dropdown), Word Wrap (toggle), Line Numbers (toggle), Highlight Current Line (toggle)
-- Section: Appearance — App Theme (segmented control: Dark / Light / System), Syntax Highlighting (simple on/off toggle, not a multi-theme picker)
+- Section: Appearance — Syntax Highlighting (simple on/off toggle); app chrome is dark-only
 - Section: System & Recovery — Auto-save Interval (dropdown: 5s/10s/30s/1m — feeds Component 7's caching interval), Read-only by Default (toggle — sets the default for newly created files, ties to Component 3)
 
 **Test cases**
@@ -740,10 +740,6 @@ Expected: editor behavior changes.
 **TC14.4 — Line numbers**
 Toggle line numbers.
 Expected: line numbers appear/disappear.
-
-**TC14.5 — Theme**
-Change theme.
-Expected: UI/editor changes correctly.
 
 **TC14.6 — Syntax highlighting**
 Disable/enable highlighting.

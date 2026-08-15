@@ -1,7 +1,6 @@
 package com.example.modern_editor
 
 import com.example.modern_editor.data.repository.InMemorySettingsRepository
-import com.example.modern_editor.domain.model.AppTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -13,10 +12,9 @@ class SettingsRepositoryTest {
     @Test
     fun `TC13 settings repository stores updates in memory`() = runBlocking {
         val repo = InMemorySettingsRepository()
-        repo.update { it.copy(fontSize = 18, theme = AppTheme.LIGHT) }
+        repo.update { it.copy(fontSize = 18) }
         val settings = repo.settings.first()
         assertEquals(18, settings.fontSize)
-        assertEquals(AppTheme.LIGHT, settings.theme)
         assertTrue(settings.syntaxHighlighting)
     }
 
@@ -42,13 +40,6 @@ class SettingsRepositoryTest {
     }
 
     @Test
-    fun `TC14_5 theme change is stored`() = runBlocking {
-        val repo = InMemorySettingsRepository()
-        repo.update { it.copy(theme = AppTheme.SYSTEM) }
-        assertEquals(AppTheme.SYSTEM, repo.settings.first().theme)
-    }
-
-    @Test
     fun `TC14_6 syntax highlighting toggle is stored`() = runBlocking {
         val repo = InMemorySettingsRepository()
         repo.update { it.copy(syntaxHighlighting = false) }
@@ -65,7 +56,6 @@ class SettingsRepositoryTest {
                 wordWrap = false,
                 lineNumbers = false,
                 highlightCurrentLine = false,
-                theme = AppTheme.LIGHT,
                 syntaxHighlighting = false,
                 autoSaveIntervalMs = 5_000L,
                 readOnlyByDefault = true
@@ -76,6 +66,6 @@ class SettingsRepositoryTest {
         assertEquals(2, settings.tabSize)
         assertEquals(5_000L, settings.autoSaveIntervalMs)
         assertTrue(settings.readOnlyByDefault)
-        assertEquals(AppTheme.LIGHT, settings.theme)
+        assertFalse(settings.syntaxHighlighting)
     }
 }

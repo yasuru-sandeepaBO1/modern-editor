@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 // Nothing outside this file's values may appear anywhere in the app.
 // There is no accent color in this project: #475163 doubles as the surface for
 // primary actions and active states.
-// Light theme reuses the same eight hex values with roles swapped.
 
 data class EditorPalette(
     val screenBackground: Color,
@@ -31,17 +30,6 @@ val DarkPalette = EditorPalette(
     buttonSurface = Color(0xFF475163),
     buttonText = Color(0xFFC4C8D1),
     primaryText = Color(0xFFFFFFFF),
-)
-
-val LightPalette = EditorPalette(
-    screenBackground = Color(0xFFFFFFFF),
-    headerSurface = Color(0xFFC4C8D1),
-    editorSurface = Color(0xFFFFFFFF),
-    gutterText = Color(0xFF4C556B),
-    inactiveSurface = Color(0xFFC4C8D1),
-    buttonSurface = Color(0xFF475163),
-    buttonText = Color(0xFF353B47),
-    primaryText = Color(0xFF31323F),
 )
 
 val LocalEditorPalette = staticCompositionLocalOf { DarkPalette }
