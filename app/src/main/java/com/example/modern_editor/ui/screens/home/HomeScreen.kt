@@ -38,7 +38,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import com.example.modern_editor.R
+import androidx.compose.foundation.Image
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -112,7 +116,7 @@ fun HomeScreen(
                     Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = PrimaryText)
                 }
                 Text(
-                    text = "Kotlin Editor",
+                    text = "Kotlin++ Lite",
                     color = PrimaryText,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -126,16 +130,14 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .background(EditorSurface, RoundedCornerShape(20.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "K", color = PrimaryText, fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                }
+                Image(
+                    painter = painterResource(R.drawable.logo_dark),
+                    contentDescription = "Kotlin++ Lite Logo",
+                    modifier = Modifier.size(80.dp),
+                    contentScale = ContentScale.Fit
+                )
                 Spacer(Modifier.height(8.dp))
-                Text(text = "Kotlin Editor", color = PrimaryText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Kotlin++ Lite", color = PrimaryText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text(text = "Code Kotlin, anywhere.", color = ButtonText, fontSize = 12.sp)
             }
 

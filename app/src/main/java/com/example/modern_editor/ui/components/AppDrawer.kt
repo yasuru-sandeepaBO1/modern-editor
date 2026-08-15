@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +42,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import com.example.modern_editor.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,15 +97,13 @@ fun AppDrawer(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(ButtonSurface, RoundedCornerShape(28.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "K", color = PrimaryText, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Text(text = "Kotlin Editor", color = PrimaryText, fontWeight = FontWeight.Bold)
+                    Image(
+                        painter = painterResource(R.drawable.logo_dark),
+                        contentDescription = "Kotlin++ Lite Logo",
+                        modifier = Modifier.size(64.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                    Text(text = "Kotlin++ Lite", color = PrimaryText, fontWeight = FontWeight.Bold)
                     Text(text = "v1.0.0", color = ButtonText, fontSize = 10.sp)
                 }
                 HorizontalDivider(color = InactiveSurface)
@@ -114,13 +116,13 @@ fun AppDrawer(
                 MenuRow(icon = Icons.Filled.Info, label = "About") {
                     infoDialog = DrawerInfoItem(
                         "About",
-                        "Kotlin Editor v1.0.0 — a native Android text editor for Kotlin and Markdown."
+                        "Kotlin++ Lite v1.0.0 — a native Android text editor for Kotlin and Markdown."
                     )
                 }
                 MenuRow(icon = Icons.Filled.Shield, label = "Privacy Policy") {
                     infoDialog = DrawerInfoItem(
                         "Privacy Policy",
-                        "Kotlin Editor stores files only where you choose to save them. No data is collected or transmitted."
+                        "Kotlin++ Lite stores files only where you choose to save them. No data is collected or transmitted."
                     )
                 }
                 MenuRow(icon = Icons.Filled.Mail, label = "Contact Us") {

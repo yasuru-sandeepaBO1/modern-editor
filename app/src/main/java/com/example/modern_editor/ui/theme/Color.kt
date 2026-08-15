@@ -22,12 +22,12 @@ data class EditorPalette(
 )
 
 val DarkPalette = EditorPalette(
-    screenBackground = Color(0xFF31323F),
-    headerSurface = Color(0xFF353B47),
-    editorSurface = Color(0xFF1E2430),
+    screenBackground = Color(0xFF02010F),
+    headerSurface = Color(0xFF0C0D15),
+    editorSurface = Color(0xFF080A14),
     gutterText = Color(0xFF4C556B),
-    inactiveSurface = Color(0xFF272B36),
-    buttonSurface = Color(0xFF475163),
+    inactiveSurface = Color(0xFF151620),
+    buttonSurface = Color(0xFF1C1E2C),
     buttonText = Color(0xFFC4C8D1),
     primaryText = Color(0xFFFFFFFF),
 )
