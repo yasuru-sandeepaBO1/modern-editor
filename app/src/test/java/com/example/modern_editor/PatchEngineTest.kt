@@ -97,6 +97,17 @@ class PatchEngineTest {
         assertEquals(current, PatchEngine.reconstruct(repo, "f", "v6"))
     }
 
+    @Test
+    fun `reconstruct middle version ignores later invalid delta`() = runBlocking {
+        val repo = PatchTestRepo()
+        val t1 = "one"
+        val t2 = "one\ntwo"
+        repo.put(Version("v1", "f", VersionType.SNAPSHOT, 1L, versionNumber = 1), t1)
+        repo.put(Version("v2", "f", VersionType.DELTA, 2L, versionNumber = 2), PatchEngine.createDelta(t1, t2))
+        repo.put(Version("v3", "f", VersionType.DELTA, 3L, versionNumber = 3), "this is not a unified diff")
+        assertEquals("one\ntwo", PatchEngine.reconstruct(repo, "f", "v2"))
+    }
+
     private suspend fun chainRepo(): PatchTestRepo {
         val repo = PatchTestRepo()
         val t1 = "one"

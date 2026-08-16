@@ -12,7 +12,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.modern_editor.recovery.RecoveryHolder
-import com.example.modern_editor.version.DiffSession
 import com.example.modern_editor.version.VersionSession
 import com.example.modern_editor.ui.components.RecoveryDialog
 import com.example.modern_editor.ui.screens.diffcompare.DiffCompareScreen
@@ -122,11 +121,15 @@ fun EditorNavGraph(navController: NavHostController = rememberNavController()) {
             VersionHistoryScreen(
                 fileId = backStackEntry.arguments?.getString(Routes.VersionHistory.ARG_FILE_ID),
                 onOpenDiffCompare = { navController.navigate(Routes.DiffCompare.route) },
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onRestored = { navController.popBackStack(Routes.Editor.route, inclusive = false) }
             )
         }
         composable(Routes.DiffCompare.route) {
-            DiffCompareScreen(onBack = { navController.popBackStack() })
+            DiffCompareScreen(
+                onBack = { navController.popBackStack() },
+                onRestored = { navController.popBackStack(Routes.Editor.route, inclusive = false) }
+            )
         }
     }
 }

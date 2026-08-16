@@ -40,10 +40,12 @@ object PatchEngine {
 
     suspend fun reconstruct(repository: VersionRepository, fileId: String, targetVersionId: String): String {
         val versions = repository.getVersionsForFile(fileId)
-        val pairs = versions.map { version ->
+        val pairs = mutableListOf<Pair<Version, Patch>>()
+        for (version in versions) {
             val patch = repository.getPatch(version.id)
                 ?: error("Missing patch for version ${version.id}")
-            version to patch
+            pairs += version to patch
+            if (version.id == targetVersionId) break
         }
         return reconstruct(pairs)[targetVersionId]
             ?: error("Version $targetVersionId not found")
