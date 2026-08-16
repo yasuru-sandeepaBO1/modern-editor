@@ -58,7 +58,7 @@ import com.example.modern_editor.version.VersionSession
 import kotlinx.coroutines.launch
 
 @Composable
-fun DiffCompareScreen(onBack: () -> Unit) {
+fun DiffCompareScreen(onBack: () -> Unit, onRestored: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val historyViewModel: HistoryViewModel = viewModel(factory = AppViewModelFactory(context.editorApp))
@@ -88,7 +88,7 @@ fun DiffCompareScreen(onBack: () -> Unit) {
                         VersionSession.pendingRollbackContent.value = content
                         VersionSession.currentContent = content
                     }
-                    onBack()
+                    onRestored()
                 }
             },
             onDismiss = { showRollbackConfirm = false }

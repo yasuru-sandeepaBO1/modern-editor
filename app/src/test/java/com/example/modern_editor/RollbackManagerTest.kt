@@ -50,4 +50,16 @@ class RollbackManagerTest {
         assertEquals("one\ntwo\nthree", rollback.contentAt("f", v3.id))
         assertEquals("one", rollback.contentAt("f", repo.getVersionsForFile("f").first().id))
     }
+
+    @Test
+    fun `TC12 restore middle version ignores later invalid delta`() = runBlocking {
+        val repo = RollbackTestRepo()
+        val manager = VersionManager(repo)
+        manager.createVersion("f", "one")
+        val v2 = manager.createVersion("f", "one\ntwo")
+        val v3 = manager.createVersion("f", "one\ntwo\nthree")
+        val bad = repo.getPatch(v3.id)!!
+        repo.savePatch(bad.copy(diff = "this is not a unified diff"))
+        assertEquals("one\ntwo", RollbackManager(repo).contentAt("f", v2.id))
+    }
 }

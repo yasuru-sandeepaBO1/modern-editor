@@ -68,7 +68,8 @@ import kotlinx.coroutines.launch
 fun VersionHistoryScreen(
     fileId: String? = null,
     onOpenDiffCompare: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onRestored: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -140,7 +141,7 @@ fun VersionHistoryScreen(
                     val content = viewModel.reconstruct(resolvedId, target.id) ?: return@launch
                     VersionSession.pendingRollbackContent.value = content
                     VersionSession.currentContent = content
-                    onBack()
+                    onRestored()
                 }
             },
             onDismiss = { rollbackTarget = null }

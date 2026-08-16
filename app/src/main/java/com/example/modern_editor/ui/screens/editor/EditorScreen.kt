@@ -200,6 +200,9 @@ fun EditorScreen(
     var showUnsavedDialog by remember { mutableStateOf(false) }
     // Set when a save was started specifically so we could leave afterwards.
     var leaveAfterSave by remember { mutableStateOf(false) }
+    // Disk/recovery load must run once per Editor back-stack entry. Re-running it when
+    // Version History is popped would overwrite both unsaved edits and a pending restore.
+    var didInitialLoad by rememberSaveable { mutableStateOf(false) }
 
     fun saveTo(uri: Uri) {
         scope.launch {
@@ -252,27 +255,36 @@ fun EditorScreen(
         } ?: FileType.PLAIN_TEXT
     }
 
+    fun applyRollback(text: String) {
+        editorState.edit { replace(0, length, text) }
+        undoState.clearHistory()
+        VersionSession.pendingRollbackContent.value = null
+        VersionSession.currentContent = text
+    }
+
     val openDocumentLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { scope.launch { loadFile(it) } } }
 
     LaunchedEffect(initialFileUri) {
+        val rollback = VersionSession.pendingRollbackContent.value
+        if (rollback != null) {
+            applyRollback(rollback)
+            didInitialLoad = true
+            return@LaunchedEffect
+        }
+        if (didInitialLoad) return@LaunchedEffect
         val restored = RecoveryHolder.takePendingApply()
         if (restored != null) {
             applyRecovery(restored)
+            didInitialLoad = true
             return@LaunchedEffect
         }
         val uriString = initialFileUri
         if (uriString != null) {
             loadFile(Uri.parse(uriString))
         }
-    }
-
-    val rollbackContent by VersionSession.pendingRollbackContent.collectAsState()
-    LaunchedEffect(rollbackContent) {
-        val text = rollbackContent ?: return@LaunchedEffect
-        editorState.edit { replace(0, length, text) }
-        VersionSession.pendingRollbackContent.value = null
+        didInitialLoad = true
     }
 
     var seededReadOnly by rememberSaveable { mutableStateOf(false) }
