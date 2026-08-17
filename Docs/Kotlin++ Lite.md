@@ -10,7 +10,7 @@ K.I.U. Thisera – 24021059
 
 **Platform:** Android  
 **Technologies:** Kotlin 2.2.10, Jetpack Compose, Room 2.8.4, java-diff-utils 4.15  
-**Repository:** github.com/yasuru-sandeepaBO1/modern-editor  
+**Repository:** https://github.com/yasuru-sandeepaBO1/modern-editor  
 
 ---
 
