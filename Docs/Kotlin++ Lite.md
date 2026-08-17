@@ -16,7 +16,7 @@ K.I.U. Thisera – 24021059
 
 # 1. Introduction
 
-Kotlin++ Lite is a native Android text editor developed as the IS2205 mini project. The application supports Kotlin and Markdown files and provides features such as file storage, syntax highlighting, Markdown preview, version comparison, version history, crash recovery and rollback.
+Kotlin++ Lite is a native Android text editor developed as the IS2205 mini project. The application supports Kotlin (`.kt`), Markdown (`.md`) and plain text (`.txt`) files and provides features such as file storage, syntax highlighting, Markdown preview, version comparison, version history, crash recovery and rollback.
 
 The project was developed using a component-based approach. Each major feature was divided into a separate component and implemented in dependency order. This allowed individual parts of the system to be developed and tested before being used by later components.
 
@@ -62,13 +62,13 @@ Storage was divided into three areas because the application has different requi
 
 | Storage area | Mechanism | Data stored |
 |---|---|---|
-| User files | Storage Access Framework + ContentResolver | `.kt` and `.md` files |
+| User files | Storage Access Framework + ContentResolver | `.kt`, `.md` and `.txt` files |
 | Version history | Room / SQLite | File records, versions and deltas |
 | Crash recovery | Private file in `filesDir` | Unsaved editor content |
 
 ## 3.1 User File Storage
 
-The actual Kotlin and Markdown files are handled using the Android Storage Access Framework (SAF). The user selects a file through the Android file picker, and the application uses the returned URI to read and write the document.
+The actual Kotlin, Markdown and plain-text files are handled using the Android Storage Access Framework (SAF). The user selects a file through the Android file picker, and the application uses the returned URI to read and write the document. New File offers a `.kt` / `.md` / `.txt` type selector. Open accepts any document (`*/*`); the language is inferred from the file name, and unknown extensions are treated as plain text.
 
 The application does not request broad storage permissions. Instead, it accesses only the documents explicitly selected by the user.
 
@@ -111,7 +111,7 @@ The recovery record stores both:
 
 This allows the application to determine whether the editor contained unsaved changes when the application stopped unexpectedly.
 
-When a normal save is completed, the recovery record is deleted rather than updated. Therefore, the presence of the recovery file itself indicates that recovery data may be available.
+When a normal save is completed, the recovery record is deleted rather than updated. A recovery prompt is shown only when the stored content differs from the last-saved snapshot (`isDirty`). Matching content is treated as clean and is not offered for restore, even if a recovery file is present.
 
 The recovery system is kept separate from the user's actual document because writing unsaved editor content directly to the user's file would overwrite the last successfully saved version.
 
@@ -125,7 +125,7 @@ A simplified representation is:
 RECOVERY_V1
 content://…/document/1234
 untitled.kt
-kt
+KOTLIN
 1755412800000
 180
 <saved snapshot data>
@@ -136,18 +136,18 @@ kt
 The record contains:
 
 - Recovery format version
-- Document URI
+- Document URI (may be empty for an unsaved new file)
 - File name
-- File type
+- File type (`KOTLIN`, `MARKDOWN` or `PLAIN_TEXT`)
 - Timestamp
 - Saved snapshot length
 - Saved snapshot data
 - Current content length
 - Current content data
 
-The length of each content block is stored before the block itself.
+The length of each content block is stored before the block itself. These lengths are **character counts** (`String.length`), not UTF-8 byte lengths. The file is written as UTF-8 text, but encode and decode both operate on Kotlin strings.
 
-This is important because source code naturally contains new lines and other characters. A delimiter-based format could become ambiguous if the chosen delimiter appeared inside the source code. The length-prefixed approach allows the decoder to know exactly how many bytes belong to each field.
+This is important because source code naturally contains new lines and other characters. A delimiter-based format could become ambiguous if the chosen delimiter appeared inside the source code. The length-prefixed approach allows the decoder to know exactly how many characters belong to each field.
 
 During decoding, the recovery header is checked first and the decoding process is wrapped using `runCatching`. If the recovery data is incomplete, corrupted or invalid, the decoder returns no usable recovery record instead of allowing the recovery mechanism itself to crash the application during startup.
 
@@ -239,6 +239,7 @@ The parser supports the implemented Markdown structures including:
 
 - Headings
 - Bold and italic emphasis
+- Strikethrough (`~~…~~`)
 - Ordered lists
 - Unordered lists
 - Task items
@@ -259,8 +260,10 @@ The resulting AST is rendered by `MarkdownDocument`, a Jetpack Compose component
 - Tables are displayed as aligned rows
 - Task items are displayed using checkboxes
 - Fenced code blocks use a monospaced layout
+- Images are shown as placeholders with alt text and URL (the image file itself is not loaded)
+- Strikethrough is rendered with a line through the text
 
-Fenced blocks marked as Mermaid are routed to the project's graph renderer.
+Fenced blocks marked as Mermaid are routed to the project's graph renderer when they use the supported flowchart subset (`graph` / `flowchart` with `TD` or `LR`). Other Mermaid diagram types fall back to a normal code block.
 
 The preview is displayed as an overlay rather than a separate navigation route. This allows the user to close the preview and return to the editor while retaining the existing cursor and scroll position.
 
@@ -270,11 +273,11 @@ The preview is displayed as an overlay rather than a separate navigation route. 
 
 # 7. Version Comparison
 
-The comparison feature allows a previous version of a file to be compared with the current version.
+The comparison feature compares a selected historical version with the **current editor buffer**. Two stored versions cannot be compared with each other.
 
 The project uses `java-diff-utils` version 4.15 for line-based comparison. The library implements the Myers diff algorithm.
 
-The library produces a sparse list of deltas describing the regions that changed. Each delta is classified as:
+The library produces a sparse list of deltas describing the regions that changed. Each library delta is classified as:
 
 - `INSERT`
 - `DELETE`
@@ -283,11 +286,11 @@ The library produces a sparse list of deltas describing the regions that changed
 
 This sparse result is useful for identifying changes but is not directly suitable for the comparison screen. The UI needs every line in order, including unchanged lines, together with independent line numbers on both sides.
 
-Therefore, the project's `DiffEngine.expand()` converts the sparse diff into the line representation used by the comparison UI.
+Therefore, `DiffEngine.compare()` converts the sparse diff into the line representation used by the comparison UI. The conversion itself is a private `expand()` helper. Library delta types are mapped onto UI types `ADDED`, `REMOVED` and `UNCHANGED`. A `CHANGE` is emitted as removed lines followed by added lines.
 
 ## 7.1 Diff Expansion Approach
 
-`DiffEngine.expand()` processes the deltas in source order and maintains two independent cursors:
+The private `expand()` helper processes the deltas in source order and maintains two independent cursors:
 
 - One cursor for the old version
 - One cursor for the new version
@@ -316,7 +319,7 @@ After processing the main delta list, trailing loops handle any remaining lines 
 
 The resulting `DiffLine` structure uses nullable line numbers to represent whether a line exists on a particular side. An inserted line has no old line number, while a deleted line has no new line number.
 
-The comparison screen uses these `DiffLine` objects to display a two-sided view with separate old and new line numbering and gaps where a line does not exist on one side.
+The comparison screen displays a **unified** list rather than two side-by-side panes. Each row shows the old line number, the new line number, a `+` or `−` marker, and the line text. A missing number is shown as `−`. When the reconstructed history version matches the current editor content, the screen shows a “No differences” empty state instead of the line list.
 
 **Related component:** C9 – Diff Engine.
 
@@ -368,7 +371,7 @@ The same reconstruction mechanism is reused by two different features.
 
 For **version comparison**, the selected historical version is reconstructed and passed to the `DiffEngine` together with the current editor content.
 
-For **rollback**, the selected historical version is reconstructed and then written back into the editor.
+For **rollback**, the selected historical version is reconstructed and then written into the editor buffer. The document on disk is not updated until the user saves.
 
 This avoids implementing separate mechanisms for retrieving historical content.
 
@@ -380,12 +383,14 @@ Therefore, rollback is essentially:
 
 ## 8.3 Creating a New Version
 
-When a new version is saved:
+File → Save writes the document through SAF. It does **not** create a `SNAPSHOT` or `DELTA`.
 
-1. The previous version is reconstructed.
-2. The new editor content is compared with the reconstructed previous content.
-3. A unified diff is generated.
-4. The resulting delta is stored as the new version.
+A history version is created only when the user taps **Save Version** on the Version History screen (an optional label may be entered). That action then:
+
+1. Reconstructs the previous version.
+2. Compares the current editor content with the reconstructed previous content.
+3. Generates a unified diff.
+4. Stores the resulting delta as the new version.
 
 This means that later versions store only the changes rather than another complete copy of the file. The storage requirement is therefore mainly related to the amount of content that changes between versions.
 
@@ -403,7 +408,9 @@ When the user selects a version for rollback:
 
 1. The selected version is reconstructed from the snapshot and required deltas.
 2. The reconstructed content is passed back to the editor.
-3. The editor replaces its current content with the reconstructed content.
+3. The editor replaces its current content with the reconstructed content and **clears the undo/redo history**.
+
+Rollback does not write the reconstructed text to the user's document on disk. The file remains at the last File → Save until the user saves again. After rollback, the editor content differs from the last-saved snapshot, so the unsaved-changes path applies.
 
 During development, a problem was identified where the restored content could be overwritten by the normal file-loading process. When returning from Version History, the editor's loading effect could reload the file from disk and replace the newly restored content.
 
@@ -435,7 +442,13 @@ The test coverage includes:
 | `VersionManagerTest` | First version as SNAPSHOT and later versions as DELTA |
 | `RollbackManagerTest` | Reconstruction of an arbitrary version |
 | `RecoveryStorageTest` | Encoding/decoding, multi-line content and corrupted input |
+| `RecoveryManagerTest` | Dirty-flag cache, no prompt when clean, discard/clear |
+| `PersistenceContractTest` | File, version and delta persistence contracts |
+| `SettingsRepositoryTest` | DataStore settings round-trip |
+| `SmartEditorTest` | Auto-indent, auto-close brackets and tab-to-spaces |
+| `GoToLineTest` | Line-offset calculation |
 | `RegressionContractTest` | Cross-component checks against regressions |
+| `ExampleUnitTest` | Default JVM template test included in the 98-test count |
 
 The tests therefore cover the major logic behind syntax highlighting, Markdown processing, comparison, patching, version creation, reconstruction, rollback and crash recovery.
 
@@ -446,7 +459,7 @@ Android-dependent features were tested separately using an emulator. These inclu
 - Editor input behaviour
 - Rollback through the UI
 
-The complete version-control flow was also tested end-to-end. This included checking the history list, confirming the first version was stored as a snapshot, confirming later versions were stored as deltas, checking the two-sided diff with correct line numbering, and testing rollback with its confirmation step.
+The complete version-control flow was also tested end-to-end. This included checking the history list, confirming the first version was stored as a snapshot, confirming later versions were stored as deltas, checking the unified diff with dual line numbering, and testing rollback with its confirmation step.
 
 ---
 
@@ -474,225 +487,29 @@ These components form a dependency chain. File persistence provides the foundati
 
 Kotlin++ Lite implements its main editing, storage and version-management features through a set of independent but connected components.
 
-The Storage Access Framework is used for the user's actual Kotlin and Markdown files, while Room stores file, version and delta information. A separate private recovery file protects unsaved editor content without overwriting the user's saved document.
+The Storage Access Framework is used for the user's actual Kotlin, Markdown and plain-text files, while Room stores file, version and delta information. A separate private recovery file protects unsaved editor content without overwriting the user's saved document.
 
 Syntax highlighting is implemented using hand-written lexers and a shared highlighting system. The analysis is cached and styling is limited to the relevant viewport, while `OutputTransformation` ensures that presentation styling does not become part of the saved source code.
 
 Markdown preview uses a separate parser and AST so that Markdown is rendered as formatted content rather than simply displaying the original Markdown markers.
 
-Version comparison uses `java-diff-utils` and the Myers diff algorithm. The project's `DiffEngine.expand()` converts the sparse diff output into a complete two-sided representation with independent line numbering.
+Version comparison uses `java-diff-utils` and the Myers diff algorithm. `DiffEngine.compare()` converts the sparse library output into a unified line list with independent old and new line numbers, comparing a historical version against the current editor buffer.
 
-Version tracking uses one complete snapshot followed by delta records. Historical versions are reconstructed by replaying the required deltas, and the same reconstruction mechanism is reused for comparison and rollback.
+Version tracking uses one complete snapshot followed by delta records, created from Version History rather than from File → Save. Historical versions are reconstructed by replaying the required deltas, and the same reconstruction mechanism is reused for comparison and rollback.
 
-Crash recovery uses a length-prefixed private journal to safely preserve unsaved content. Rollback reconstructs the selected historical version and writes it back to the editor, with a confirmation step to protect against accidental loss of unsaved work.
+Crash recovery uses a length-prefixed private journal to safely preserve unsaved content. Rollback reconstructs the selected historical version into the editor (without writing the document on disk until the user saves), with a confirmation step to protect against accidental loss of unsaved work.
 
 The implementation was verified through 98 JVM unit tests together with emulator-based testing of Android-specific behaviour. These mechanisms together provide the storage, preview, comparison, version tracking, recovery, rollback and syntax highlighting functionality of Kotlin++ Lite.
 
 ---
 
-# Appendix — Review notes vs implemented project
-
-Checked this report against the current `main` codebase (`app/src/main`, `app/src/test`) on 17 August 2026. The **core story is correct**: SAF for user files, Room for versions/deltas, a private recovery journal, snapshot-then-delta versioning, Myers diff via `java-diff-utils`, viewport-limited `OutputTransformation` highlighting, Markdown AST preview, and rollback through reconstruction.
-
-The notes below are **issues to fix**, **details to add**, and **optional extras**. They are for editing this report — they are not a rewrite of the implementation.
-
----
-
-## A. Confirmed correct (no change needed)
-
-These claims match the code:
-
-- Kotlin **2.2.10**, Room **2.8.4**, java-diff-utils **4.15**
-- SAF + `ContentResolver`; no storage permissions in `AndroidManifest.xml`
-- `takePersistableUriPermission()` (wrapped in `runCatching` in `FileStorage`)
-- Save uses `"wt"` truncate-write on `Dispatchers.IO`
-- Room entities `FileEntity` / `VersionEntity` / `DeltaEntity` with cascade FKs
-- `ensureFileRecord()` before the first version save
-- Recovery file `crash_recovery.txt` in `filesDir`, header `RECOVERY_V1`, length-prefixed payload, `runCatching` on decode
-- Recovery stores **current content + last-saved snapshot**; file is deleted after a successful save (`RecoveryHolder.manager?.clear()`)
-- Shared `SyntaxHighlighter` with `KotlinHighlighter` / `MarkdownHighlighter`
-- Viewport: 8,000-character quantum, 4,000-character margin; full-file analysis, viewport-only styling
-- `OutputTransformation` is presentational only
-- Kotlin lexer: nested block comments, raw strings, `@file:`-style annotations, hex/bin/exponents/suffixes, `fun` → function name, ordinary strings stop at newline
-- Markdown preview is an overlay (`MarkdownPreviewOverlay`), not a nav route
-- Deltas use unified diff with **context radius 0** (`UnifiedDiffUtils.generateUnifiedDiff(..., 0)`)
-- First version is `SNAPSHOT`, later versions are `DELTA`; reconstruction walks snapshot → deltas and **stops at the requested version**
-- Rollback uses `VersionSession.pendingRollbackContent` so the editor load effect does not overwrite a restore
-- Rollback confirmation dialog: *“Roll back to vX? Any unsaved changes in the current file will be lost.”*
-- **98** `@Test` methods across **15** classes under `app/src/test`
-
----
-
-## B. Issues to fix (report does not match the code)
-
-### 1. File types are not only `.kt` and `.md`
-
-**Where:** Introduction, §3.1, storage table.
-
-The app also supports **plain text (`.txt`)**. New File has a `.kt` / `.md` / `.txt` type selector (`FileNameDialog`). Open uses `*/*`, and unknown extensions become `FileType.PLAIN_TEXT`.
-
-**Suggested wording:** Kotlin (`.kt`), Markdown (`.md`), and plain text (`.txt`).
-
-### 2. Recovery example uses the wrong file-type field
-
-**Where:** §4.1 sample (`untitled.kt` / `kt`).
-
-The encoded `fileType` is the enum name (`KOTLIN`, `MARKDOWN`, `PLAIN_TEXT`), not the extension (`kt`). URI may also be empty for an unsaved new file.
-
-### 3. Length prefixes are character counts, not bytes
-
-**Where:** §4.1 — “how many bytes belong to each field”.
-
-`encode()` writes `String.length` (Kotlin UTF-16 code units) then the substring. Decode uses the same. The file is UTF-8 on disk, but the prefixes are **string lengths**, not UTF-8 byte lengths.
-
-**Suggested wording:** length-prefixed **character** blocks.
-
-### 4. Recovery is not “file exists ⇒ recover”
-
-**Where:** §4 — “the presence of the recovery file itself indicates that recovery data may be available”.
-
-`pendingRecovery()` also requires `isDirty` (`content != savedSnapshot`). A file whose content matches the last save is cleared and does not show the Restore/Discard dialog.
-
-Also missing: the interval is **not hardcoded**. Default is 10 s (`RecoveryManager.DEFAULT_INTERVAL_MS`); Settings can set 5 s / 10 s / 30 s / 1 m (`autoSaveIntervalMs`).
-
-### 5. `DiffEngine.expand()` is not a public API
-
-**Where:** §7, §7.1, conclusion.
-
-`expand()` is **private**. The public entry point is `DiffEngine.compare()`. Internally it maps library `DeltaType` (`INSERT` / `DELETE` / `CHANGE` / `EQUAL`) onto UI types `ADDED` / `REMOVED` / `UNCHANGED`. A `CHANGE` becomes removed lines then added lines — there is no `CHANGE` / `EQUAL` on `DiffLine`.
-
-### 6. Comparison UI is not a two-pane “two-sided” view
-
-**Where:** §7.1 — “two-sided view”.
-
-`DiffCompareScreen` is a **unified** list: old line number | new line number | `+`/`−` | text. Missing numbers show `−`. Identical versions show *“No differences between vX and vY”* (`hasChanges`).
-
-Also: compare is always **selected history version vs the current editor buffer** (`DiffSession.toLabel = "current"`). You cannot compare two stored versions to each other.
-
-### 7. Versions are not created by File → Save
-
-**Where:** §8.3 “When a new version is saved”.
-
-File Save writes the SAF document only. A history version is created only when the user taps **Save Version** on Version History (optional label). That is easy to misread as “every disk save creates a SNAPSHOT/DELTA”.
-
-### 8. Rollback restores the editor buffer, not the file on disk
-
-**Where:** §9.
-
-Rollback reconstructs text, puts it in the editor, and **clears undo history**. It does **not** call `FileStorage.writeText`. The file on disk stays at the last Save until the user saves again. After rollback, content ≠ `savedSnapshot`, so the unsaved-changes path applies.
-
-### 9. Highlighting is skipped for very large buffers
-
-**Where:** §5.2.
-
-If `text.length > MAX_HIGHLIGHT_LENGTH` (**2,000,000**), `transformOutput()` returns without analysing or styling. Worth one sentence so “the complete file is still scanned” is not absolute.
-
-### 10. Markdown images are placeholders, not loaded bitmaps
-
-**Where:** §6 — “Images”.
-
-Preview parses `MdInline.Image` but `ImagePlaceholder` shows alt text + URL. No network/file image load.
-
-Mermaid is only a **flowchart/graph TD|LR subset** (`MermaidGraph.parse`). Other diagram types fall back to a code block.
-
-Parser also supports **strikethrough** (`~~…~~`) — not in the supported-structures list.
-
-### 11. Test-class table is incomplete
-
-**Where:** §10.
-
-98 tests / 15 classes is correct. The table lists **9** classes. Missing:
-
-| Test class | Main coverage |
-|---|---|
-| `RecoveryManagerTest` | Dirty-flag cache, no prompt when clean, discard/clear |
-| `PersistenceContractTest` | File / version / delta persistence contracts |
-| `SettingsRepositoryTest` | DataStore settings round-trip |
-| `SmartEditorTest` | Auto-indent, auto-close brackets, tab → spaces |
-| `GoToLineTest` | Line-offset calculation |
-| `ExampleUnitTest` | Template `1+1=2` (include in the count, or drop from 98/15) |
-
----
-
-## C. Details worth adding (true in the project, missing from the report)
-
-### Storage / files (C3)
-
-- Read/write is **UTF-8**.
-- Rename / delete go through `DocumentsContract` (`renameDocument` / `deleteDocument`).
-- Recent files live in Room (`files` table, ordered by `modifiedAt`). Deleting a file also deletes its versions (`RoomFileRepository.delete`).
-- Database file name: `editor.db`. Room uses `fallbackToDestructiveMigration` (schema v1).
-
-### Crash recovery (C7)
-
-- Prompt is on **Home**, not Loading: Restore / Discard, no X (`onDismissRequest = {}`).
-- Restore is routed through `RecoveryHolder.prepareRestore` → editor `applyRecovery`.
-- Periodic write is a Compose `LaunchedEffect` loop (`delay(intervalMs)`), not a WorkManager job.
-
-### Syntax highlighting (C5)
-
-- Settings can turn highlighting **off** (`syntaxHighlighting`).
-- Character literals (`'x'`) are styled as strings.
-- Soft keywords that are common identifiers (`get`, `set`, `value`, `file`, …) are **not** highlighted, on purpose (`KotlinKeywords`).
-- Markdown **editor** highlighting is a smaller set than preview: headings, bold, italic, code, list markers, blockquotes, links. Tables, task items, images, and `---` are **not** coloured in the editor.
-
-### Markdown preview (C6)
-
-- Opened from Options Menu → **Preview** (Markdown files only).
-- Task items render as checkboxes; tables as aligned rows; fenced `mermaid` → `MermaidGraph` when parseable.
-
-### Version control (C10–C12)
-
-- History list is newest-first; reconstruction still uses `ORDER BY versionNumber ASC`.
-- `SnapshotManager.snapshotContent()` stores the full text as the first patch payload.
-- Optional version **label** is stored on `VersionEntity.label`.
-
-### Tech stack (header)
-
-Worth adding if the marker cares about completeness:
-
-- Jetpack **DataStore** 1.1.7 (settings)
-- Navigation Compose 2.9.6
-- `minSdk` 24, `targetSdk` / `compileSdk` 37
-- Application id `com.example.modern_editor`; display name **Kotlin++ Lite**
-
----
-
-## D. Implemented in the app, outside this report’s stated scope
-
-The introduction correctly limits the write-up to C3 and C5–C12. These are already in the app if you want a short “also implemented” paragraph, or to leave out:
-
-| Area | What exists |
-|---|---|
-| C0 / C4 | Hub-and-spoke nav: Loading → Home → Editor / Files / Settings; History → Diff. No bottom tabs. |
-| C1 | Undo/redo (session-only; cleared on rollback) |
-| C2 | Line numbers, word wrap, find / replace / replace all (plain text, no regex) |
-| C13 | `FileRepository` / `VersionRepository` / `SettingsRepository` |
-| C14 | Font size, tab size, wrap, line numbers, current-line highlight, highlighting on/off, recovery interval, read-only by default |
-| C15 | Auto-indent, auto-close brackets, go to line, full screen, hide toolbar, share, read-only lock |
-| UI | “Open Folder” is in the File Menu but **disabled** (out of scope) |
-
-Do **not** treat undo/redo as version control — the code keeps them separate, which the report already says.
-
----
-
-## E. Suggested one-line patches (copy into the body if you want)
-
-1. **Intro / §3.1:** “…Kotlin (`.kt`), Markdown (`.md`), and plain text (`.txt`)…”
-2. **§4.1:** Replace `kt` with `KOTLIN`; say “character length”, not “bytes”.
-3. **§4:** Recovery prompt only if `content != savedSnapshot`; interval from Settings (default 10 s).
-4. **§5.2:** “…except buffers larger than 2,000,000 characters, which skip highlighting.”
-5. **§6:** Images are alt/URL placeholders; Mermaid is flowchart TD/LR only; add strikethrough.
-6. **§7:** `DiffEngine.compare()`; UI types `ADDED` / `REMOVED` / `UNCHANGED`; unified dual-gutter layout vs current buffer.
-7. **§8.3:** Versions are created from Version History → Save Version, not from File → Save.
-8. **§9:** Rollback updates the editor only; user must Save to write the document.
-9. **§10:** Add the six missing test classes, or say “9 of 15 listed below”.
-10. **Header:** Add DataStore next to Room / java-diff-utils.
-
----
-
-## F. What was not re-checked here
-
-- The PDF was treated as the same text as this Markdown file; layout/pagination of the PDF was not reviewed.
-- JVM tests were not re-run in this environment (no Android SDK). The **98** count is from `@Test` methods in `app/src/test`.
-- Emulator / SAF / force-stop recovery behaviour was not re-run; those remain as described from the project’s existing emulator testing notes.
+# Appendix — Remaining optional notes
+
+The listed mismatches have been applied in the report body. These items are still optional if you want more completeness:
+
+- Highlighting is skipped entirely when the buffer is larger than **2,000,000** characters (`MAX_HIGHLIGHT_LENGTH`).
+- Recovery interval defaults to 10 s and can be set in Settings (5 s / 10 s / 30 s / 1 m).
+- File I/O is UTF-8. Settings use Jetpack DataStore.
+- The recovery dialog is on Home (Restore / Discard, no close button).
+- Markdown **editor** highlighting is a smaller set than preview (no tables, task items, images, or thematic breaks in the lexer).
+- Settings can turn syntax highlighting off.
